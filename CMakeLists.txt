@@ -28,13 +28,16 @@ include(OSisLinux REQUIRED)
 set(PROJECT_NAME "Test")
 
 # Select generation type : library or executable. Set to true to generate library
-set(GENERATE_LIBRARY false) # DO NOT MODIFY !!!!!!!!
+set(GENERATE_LIBRARY true) # DO NOT MODIFY !!!!!!!!
+
+# Set if dynamic library should be generated (no use of static library)
+set(GENERATE_DYNAMIC_LIBRARY true)
 
 # External Library use variables
 set(USE_XERCES false CACHE BOOL "Set to true to enable the use of Xerces Library")
 set(USE_QT false CACHE BOOL "Set to true to enable the use of Qt Library")
 # ... Extend with other libraires
-MARK_AS_ADVANCED(GENERATE_LIBRARY USE_XERCES USE_QT) # All use variables are left to advanced users (to extend with other libraries
+MARK_AS_ADVANCED(GENERATE_LIBRARY USE_XERCES USE_QT) # All use variables are left to advanced users (to extend with other libraries)
 
 # Location of generated program or library
 set(EXECUTABLE_OUTPUT_PATH ${CMAKE_CURRENT_LIST_DIR})
@@ -62,11 +65,10 @@ include(SetUpConfigurationFlags REQUIRED) # Change or extend module
 # Xerces Setup
 if(USE_XERCES)
 	find_package(Xerces)
-	if(NOT XERCESC_FOUND)
-		message(FATAL_ERROR "You must install Xerces") 
-	else()
-		list(APPEND ALL_LIBRARIES ${XERCESC_LIBRARY}) #If Xercesc is found, append it to library list	
-	endif()
+	list(APPEND ALL_LIBRARIES ${XERCESC_LIBRARY}) #If Xercesc is found, append it to library list
+	if(XERCESC_STATIC) # Check if library should be static
+		set(GENERATE_DYNAMIC_LIBRARY false)
+	endif() 	
 endif()
 
 # Qt Setup
@@ -128,7 +130,6 @@ if(GENERATE_LIBRARY)
 	)
 
 	list(REMOVE_ITEM header_install ${no_install}) # We don't want to install the files that may change from one lib/app to another.
-	MESSAGE(STATUS ${header_install})
 endif()
 
 #############################################################################
@@ -150,16 +151,18 @@ if(GENERATE_LIBRARY)
 	)
 
 	# Generate dynamic library
-	add_library(
+	if(GENERATE_DYNAMIC_LIBRARY)
+		add_library(
 
-		${PROJECT_NAME}
+			${PROJECT_NAME}
 
-		SHARED
+			SHARED
 
-		${source_files}
+			${source_files}
 
-		${header_files}
-	)
+			${header_files}
+		)
+	endif()
 else()
 	# Creating Executable
 	add_executable(
@@ -172,27 +175,30 @@ else()
 	)
 endif()
 
-# Adding Libraries to executable
-target_link_libraries(
+# Adding Libraries to executable or dynamic library
+if(NOT GENERATE_LIBRARY OR GENERATE_DYNAMIC_LIBRARY)
+	target_link_libraries(
 
-	${PROJECT_NAME}
+		${PROJECT_NAME}
 
-	${ALL_LIBRARIES}
-)
-
-if(GENERATE_LIBRARY)
-# Static Library Name change (so that both libraries share the same name)
-set_target_properties(${PROJECT_NAME}_static PROPERTIES OUTPUT_NAME ${PROJECT_NAME})
-
-# Specify compilation language
-if(NOT source_files) # If no source files found, indicate programming language
-set_target_properties(${PROJECT_NAME} PROPERTIES LINKER_LANGUAGE CXX)
-set_target_properties(${PROJECT_NAME}_static PROPERTIES LINKER_LANGUAGE CXX)
+		${ALL_LIBRARIES}
+	)
 endif()
 
-# Define install directories
-install(TARGETS ${PROJECT_NAME}_static ${PROJECT_NAME} LIBRARY DESTINATION lib/${PROJECT_NAME} ARCHIVE DESTINATION lib/${PROJECT_NAME})
-install(FILES ${header_install} DESTINATION include/${PROJECT_NAME})
+# Additional operatons for libraries
+if(GENERATE_LIBRARY)
+	# Specify compilation language
+	if(NOT source_files) # If no source files found, indicate programming language, in library since exe must have a main file
+	set_target_properties(${PROJECT_NAME} PROPERTIES LINKER_LANGUAGE CXX)
+	set_target_properties(${PROJECT_NAME}_static PROPERTIES LINKER_LANGUAGE CXX)
+	endif()
+
+	# Define install directories
+	install(TARGETS ${PROJECT_NAME}_static ARCHIVE DESTINATION lib/${PROJECT_NAME})
+	if(GENERATE_DYNAMIC_LIBRARY)
+		install(TARGETS ${PROJECT_NAME} LIBRARY DESTINATION lib/${PROJECT_NAME})
+	endif()
+	install(FILES ${header_install} DESTINATION include/${PROJECT_NAME})
 endif()
 
 #############################################################################

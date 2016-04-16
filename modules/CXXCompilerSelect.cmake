@@ -9,12 +9,12 @@
 # Once done this will change :
 # CMAKE_CXX_COMPILER as cached variable if a new compiler is defined
 
-### Checking Input variables existence. If they don't exist set them to default value
+### Checking Input variables existence. If they don't exist set them to default value ###
 if(NOT DEFINED COMPILER_CHANGED)
 	set(COMPILER_CHANGED false)
 endif()
 
-### Checking compiler to be used
+### Checking compiler to be used ###
 if(COMPILER_CHANGED) #If compiler is changed
 
 	if(EXISTS ${COMPILER_FILE})
