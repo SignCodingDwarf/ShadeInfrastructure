@@ -17,8 +17,10 @@
 message(STATUS "Locating Xerces-c library")
 
 ### Check if data are already stored in cache ###
-if(NOT DEFINED XERCESC_INCLUDE OR NOT DEFINED XERCESC_LIBRARY)
+if(DEFINED XERCESC_INCLUDE AND DEFINED XERCESC_LIBRARY)
 	set(XERCESC_FIND_QUIETLY true)
+else()
+	set(XERCESC_FIND_QUIETLY false)
 endif()
 
 #############################################################################
@@ -31,12 +33,12 @@ if(NOT DEFINED XERCESC_WAS_STATIC OR NOT ${XERCESC_WAS_STATIC} STREQUAL ${XERCES
 	set(XERCESC_FIND_QUIETLY false) # We have to find back xerces with the new library
 endif()
 
-set(XERCESC_WAS_STATIC ${XERCESC_STATIC} CACHE BOOL INTERNAL "" ) # Store previous library choice in cache
+set(XERCESC_WAS_STATIC ${XERCESC_STATIC} CACHE INTERNAL "Set to true to use static library (.a)" ) # Store previous library choice in cache
 
 #############################################################################
 
 ### Find include directory path ###
-if(NOT ${XERCESC_FIND_QUIETLY}) # If it was not already found, search for Xerces include folder
+if(NOT XERCESC_FIND_QUIETLY) # If it was not already found, search for Xerces include folder
 	find_path(XERCESC_INCLUDE NAMES xercesc/util/XercesVersion.hpp # Find version path
 	PATHS
 	$ENV{XERCESC_INCLUDE_DIR} # Custom search paths as an environment variable
@@ -49,7 +51,7 @@ endif()
 #############################################################################
 
 ### Find library file ###
-if(NOT ${XERCESC_FIND_QUIETLY}) # If it was not already found, search for Xerces library file
+if(NOT XERCESC_FIND_QUIETLY) # If it was not already found, search for Xerces library file
 	if(XERCESC_STATIC)
 		FIND_LIBRARY(XERCESC_LIBRARY NAMES xerces-c_static_3 libxerces-c.a xerces-c
 		PATHS

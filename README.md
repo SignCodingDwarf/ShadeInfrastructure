@@ -23,3 +23,8 @@ Modified CMakeLists.txt file :
 - Added GENERATE\_DYNAMIC\_LIBRARY variable to handle the case of using a static library for compilation (because then, a dynamic library could not be used)
 
 Updated and commented FindXerces.cmake and especially modified handling of XERCESC\_STATIC variable and of path locations. Also added a more informative error message.
+
+### April 17 2016
+Modified FindXerces.cmake :
+- Modified the management and use of XERCESC\_FIND\_QUIETLY
+- Corrected a bug of variable XERCESC\_WAS\_STATIC not stored in cache
