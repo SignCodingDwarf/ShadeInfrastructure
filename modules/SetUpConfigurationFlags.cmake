@@ -30,14 +30,17 @@ CHECK_CXX_COMPILER_FLAG("-std=c++0x" COMPILER_SUPPORTS_CXX0X)
 if(COMPILER_SUPPORTS_CXX11)
     	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11") # Enable the use of C++11 flag
     	add_definitions(-DUSE_SHARED_POINTERS=1)  # Enable shared pointers use
-    	## Add other C++11 mecanismes management here
+	add_definitions(-DUSE_AUTO_LOOPS=1)  # Enable range-based syntax use
+    	## Add other C++11 features management here
 elseif(COMPILER_SUPPORTS_CXX0X)
     	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++0x")
     	add_definitions(-DUSE_SHARED_POINTERS=1)
-	## Add other C++11 mecanismes management here
+	add_definitions(-DUSE_AUTO_LOOPS=1)
+	## Add other C++11 features management here
 else()
         message(STATUS "The compiler ${CMAKE_CXX_COMPILER} has no C++11 support. Disabling C++11 features")
 	add_definitions(-DUSE_SHARED_POINTERS=0) # Disable shared pointers because unsupported by compiler
-	## Add other C++11 mecanismes management here
+	add_definitions(-DUSE_AUTO_LOOPS=0) # Disable range-based syntax use because unsupported by compiler
+	## Add other C++11 features management here
 endif()
 
