@@ -2,8 +2,8 @@
  * @file common_defines.h
  * @brief Common Macros Definition
  * @author Sign Coding Dwarf
- * @version 1.0
- * @date 21 March 2016
+ * @version 1.1
+ * @date 02 June 2016
  *
  * Definition of macros common to all designed applications
  *
@@ -57,10 +57,26 @@
 #define USE_SHARED_POINTERS 1
 #endif
 
+#ifndef USE_AUTO_LOOPS
+/*! 
+* @def USE_AUTO_LOOPS
+* @brief Check if auto loops can be used
+*
+*  Checking if auto loops (i.e. range based syntax and auto keyword in loops) is allowed is done with \#if USE_AUTO_LOOPS. By default this choice is determined by compiler support of C++11. However a different choice can be specified using compiling preprocessor flag : <br>
+* \a -DUSE_AUTO_LOOPS=\<value\>
+*
+*/
+#define USE_AUTO_LOOPS 1
+#endif
+
 #else // Compiler does not support C++11
 
 #ifndef USE_SHARED_POINTERS
 #define USE_SHARED_POINTERS 0
+#endif
+
+#ifndef USE_AUTO_LOOPS
+#define USE_AUTO_LOOPS 0
 #endif
 
 #endif

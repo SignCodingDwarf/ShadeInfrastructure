@@ -28,3 +28,7 @@ Updated and commented FindXerces.cmake and especially modified handling of XERCE
 Modified FindXerces.cmake :
 - Modified the management and use of XERCESC\_FIND\_QUIETLY
 - Corrected a bug of variable XERCESC\_WAS\_STATIC not stored in cache
+
+### June 04 2016
+Modified SetUpConfigurationFlags.cmake and common_defines.h :
+- Added management of USE\_AUTO\_LOOPS preprocessor flag to enable/disable use of C++11 range based loop syntax
