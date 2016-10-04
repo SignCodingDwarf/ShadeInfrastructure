@@ -36,8 +36,10 @@ set(GENERATE_DYNAMIC_LIBRARY true)
 # External Library use variables
 set(USE_XERCES false CACHE BOOL "Set to true to enable the use of Xerces Library")
 set(USE_QT false CACHE BOOL "Set to true to enable the use of Qt Library")
+set(USE_SFML false CACHE BOOL "Set to true to enable the use of SFML Library")
 # ... Extend with other libraires
-MARK_AS_ADVANCED(GENERATE_LIBRARY USE_XERCES USE_QT) # All use variables are left to advanced users (to extend with other libraries)
+
+MARK_AS_ADVANCED(GENERATE_LIBRARY USE_XERCES USE_QT USE_SFML) # All use variables are left to advanced users (to extend with other libraries)
 
 # Location of generated program or library
 set(EXECUTABLE_OUTPUT_PATH ${CMAKE_CURRENT_LIST_DIR})
@@ -79,6 +81,15 @@ if(USE_QT)
 	list(APPEND ALL_LIBRARIES ${QT_LIBRARY}) #If Qt is found, append it to library list
 endif()
 
+#SFML Setup
+#if(USE_SFML) #list(FIND <list> <value> <output variable>)
+#	find_package(SFML)
+#	include_directories({SFML_INCLUDES})
+#	list(APPEND ALL_LIBRARIES ${SFML_LIBRARY})
+#	if(SFML_STATIC) # Check if library should be static
+#		set(GENERATE_DYNAMIC_LIBRARY false)
+#	endif() 
+#endif()
 
 ### Application specific libraries ###
 # Add your other libraries here
