@@ -32,3 +32,7 @@ Modified FindXerces.cmake :
 ### June 04 2016
 Modified SetUpConfigurationFlags.cmake and common_defines.h :
 - Added management of USE\_AUTO\_LOOPS preprocessor flag to enable/disable use of C++11 range based loop syntax
+
+### October 10 2016
+Modified SetUpConfigurationFlags.cmake and common_defines.h :
+- Added management of USE\_LAMBDA\_FUNCTIONS preprocessor flag to enable/disable use of C++11 Lambda functions
