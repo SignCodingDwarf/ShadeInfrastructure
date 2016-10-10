@@ -2,8 +2,8 @@
  * @file common_defines.h
  * @brief Common Macros Definition
  * @author Sign Coding Dwarf
- * @version 1.1
- * @date 02 June 2016
+ * @version 1.2
+ * @date 10 October 2016
  *
  * Definition of macros common to all designed applications
  *
@@ -69,6 +69,18 @@
 #define USE_AUTO_LOOPS 1
 #endif
 
+#ifndef USE_LAMBDA_FUNCTIONS
+/*! 
+* @def USE_LAMBDA_FUNCTIONS
+* @brief Check if lambda functions can be used
+*
+*  Checking if lambda functions (i.e. anonymous inline functions) is allowed is done with \#if USE_LAMBDA_FUNCTIONS. By default this choice is determined by compiler support of C++11. However a different choice can be specified using compiling preprocessor flag : <br>
+* \a -DUSE_LAMBDA_FUNCTIONS=\<value\>
+*
+*/
+#define USE_LAMBDA_FUNCTIONS 1
+#endif
+
 #else // Compiler does not support C++11
 
 #ifndef USE_SHARED_POINTERS
@@ -77,6 +89,10 @@
 
 #ifndef USE_AUTO_LOOPS
 #define USE_AUTO_LOOPS 0
+#endif
+
+#ifndef USE_LAMBDA_FUNCTIONS
+#define USE_LAMBDA_FUNCTIONS 0
 #endif
 
 #endif
