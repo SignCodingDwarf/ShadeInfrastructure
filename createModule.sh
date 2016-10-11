@@ -24,9 +24,9 @@ upper_name=""
 
 ### Include functions
 # Interface management
-. "scripts/interface.sh"
+. "scripts/zenityInterface.sh"
 
-# Data parsing
+# Data post-processing
 
 # File generation
 . "scripts/generateFile.sh"
@@ -62,9 +62,6 @@ sleep 2
 #updateZenityProgressBar 153
 
 ### CleanUp
-updateZenityProgressBar 99 "Cleaning" 
-sleep 0.2
-updateZenityProgressBar 100
 cleanupZenityProgressBar
 
 ### Exit program

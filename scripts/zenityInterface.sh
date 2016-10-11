@@ -1,9 +1,9 @@
 #!/bin/bash
 
-# file : createModule.sh
+# file : zenityInterface.sh
 # author : SignCodingDwarf
 # version : 1.0
-# date : 06 October 2016
+# date : 11 October 2016
 # Definition of interface management variables and functions
 
 ### Global variables
@@ -110,7 +110,8 @@ createZenityProgressBar() {
 #
 # Updates the progress bar with the desired text and percentage or displays a warning if progress bar is not running.
 # Updates displayed text only if the second function parameter is not empty.
-# Progress value is clamped in range [0 100] and warning is displayed if clamping occurs. 
+# Progress value is clamped in range [0 99] and warning is displayed if clamping occurs. 
+# Range is clamped to 99 because 100 value which causes the progress bar to close is reserved to cleanupZenityProgressBar function. 
 #
 ##	
 updateZenityProgressBar() {
@@ -129,13 +130,13 @@ updateZenityProgressBar() {
 		if [ ! -z "$2" ]; then # Text updated only if text is not empty 
 			echo "# ${2}" >> ${progress_pipe}
 		fi
-# Clamp progress values between 0 and 100
+# Clamp progress values between 0 and 99
 		if [ "${1}" -lt 0 ]; then
 			echo "${color}WARNING : progress value ${1} is clamped to 0 ${NC}"
 			local progress=0
-		elif [ "${1}" -gt 100 ]; then
+		elif [ "${1}" -gt 99 ]; then
 			echo "${color}WARNING : progress value ${1} is clamped to 100 ${NC}"
-			local progress=100
+			local progress=99
 		else
 			local progress=$1			
 		fi
@@ -153,8 +154,16 @@ updateZenityProgressBar() {
 #
 ##	
 cleanupZenityProgressBar() {
+# Display Clean up phase and close progress bar with progress value of 100
+	updateZenityProgressBar 99 "Cleaning" 
+	sleep 0.2 ## Small delta so that user can see clean up is performed before progress bar closes
+	echo "100" >> ${progress_pipe}
+
+# Kill tail process
 	read -r pid < ${tail_pid}
 	kill $pid
+
+# Delete temporary files
 	rm ${progress_pipe}
 	rm ${tail_pid}
 }
