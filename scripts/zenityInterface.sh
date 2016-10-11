@@ -22,21 +22,34 @@ tail_pid="tail_pid.txt" # File that will contain the PID of the tail process to 
 # @param 1 : Separator between output data as a string
 #
 # Creates a Zenity based interface for the CMake library finder generator. 
-# The user_input variable is set with the content entered by the user.
+# The user_input variable is set with the content entered by the user structured as an array.
 # The interface_status variable is set with the return code of the interface.
 #
 ##
 createZenityInterface() {
-	user_input=$(
+# Interface creation
+	local input_string
+	input_string=$(
 		zenity  --forms --title="CMake library  finder module generator" \
 			--text="Enter information on the library" \
 			--separator=$1 \
 			--add-entry="Library Name" \
 			--add-entry="Include file" \
-			--add-entry="Include suffixes"
-			# --add-entry="Location" #\
+			--add-entry="Include suffix" \
+			--add-entry="Version file" \
+			--add-entry="Version suffix"\
+			--add-entry="Static Library names"\
+			--add-entry="Dynamic Library names"\
+			--add-entry="Libraries suffix"\
+			--add-entry="Reference address"\
+			--add-entry="Components definition file"
 	)
+# Get status of the interface
 	interface_status=$? # Get the interface status
+
+# Convert user input string to array
+	local IFS="$1" # Set value for Internal field separator. This value is set in a local variable so that system value is not modified.	
+	read -ra user_input <<< "${input_string}" # Convert string to array
 }
 
 ##!
@@ -54,21 +67,21 @@ createZenityInterface() {
 zenityInterfaceStatus() {
 	case $1 in
 	    0) # User selected OK
-		echo "$2Library data set up ${NC}"
+		echo -e "$2Library data set up ${NC}"
 		;;
 	    1) # User selected cancel
-		echo "$2Module creation was cancelled"
-		echo "Exiting ${NC}"
+		echo -e "$2Module creation was cancelled"
+		echo -e "Exiting ${NC}"
 		exit 0
 		;;
 	    5) #Timeout
-		echo "$3Timeout on the dialog box"
-		echo "Exiting ${NC}"
+		echo -e "$3Timeout on the dialog box"
+		echo -e "Exiting ${NC}"
 		exit 1
 		;;
 	    *) # Unknown error
-		echo "$3An unknown error occured"
-		echo "Exiting ${NC}"
+		echo -e "$3An unknown error occured"
+		echo -e "Exiting ${NC}"
 		exit 1
 		;;
 	esac
@@ -124,7 +137,7 @@ updateZenityProgressBar() {
 
 # If progress bar not running : display warning
 	if [ "$progress_bar_status" -ne 0 ]; then
-		echo "${color}WARNING : the progress bar is down ${NC}"
+		echo -e "${color}WARNING : the progress bar is down ${NC}"
 	else
 # Otherwise update progress bar
 		if [ ! -z "$2" ]; then # Text updated only if text is not empty 

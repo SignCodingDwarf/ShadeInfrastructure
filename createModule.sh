@@ -17,8 +17,19 @@ NC='\033[0m' # No Color
 # Behavior variables
 separator=";" # Separator between output variables of the interface
 
-# Library content
-library_name=""
+# Library definition variables
+library_name="" # Name of the library 
+include_base_file="" # Name and subdirectory of the include file used to locate the include directory of the library
+include_suffix="" # Suffixes added to the base search paths for the include main directory
+version_file="" # Name of the include file containing library version
+version_suffix="" # Subdirectory of the include file containing library version
+static_libraries="" # Possible names for the static library
+dynamic_libraries="" # Possible names for the dynamic libraries
+libraries_suffix="" # Suffixes added to the base search paths for the libraries location
+reference_address="" # HTTP address where information on the library can be found
+components_file="" # Name of the components definition and dependencies file
+
+# File generation variables
 file_name=""
 upper_name=""
 
@@ -40,9 +51,24 @@ zenityInterfaceStatus $interface_status ${statusColor} ${errorColor}
 createZenityProgressBar
 sleep 0.5
 
+### Parse User input
+updateZenityProgressBar 0 "Parsing user input" 
+
+library_name=${user_input[0]}
+include_base_file=${user_input[1]}
+include_suffix=${user_input[2]}
+version_file=${user_input[3]}
+version_suffix=${user_input[4]}
+static_libraries=${user_input[5]}
+dynamic_libraries=${user_input[6]}
+libraries_suffix=${user_input[7]}
+reference_address=${user_input[8]}
+components_file=${user_input[9]}
+
+updateZenityProgressBar 5
+
 ### Post-process data
-updateZenityProgressBar 5 "Parsing user input" 
-library_name=$user_input # To update with parsing
+
 
 sleep 2
 
