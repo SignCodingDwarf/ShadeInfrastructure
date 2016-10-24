@@ -30,17 +30,23 @@ reference_address="" # HTTP address where information on the library can be foun
 components_file="" # Name of the components definition and dependencies file
 
 # File generation variables
-file_name=""
-upper_name=""
+file_name="" # Name of the file to create
+upper_name="" # Library name as upper characters used for creating module related variable names
+components_list="" # List of component (empty if no components)
 
 ### Include functions
 # Interface management
 . "scripts/zenityInterface.sh"
 
 # Data post-processing
+. "scripts/processStrings.sh"
+. "scripts/processCMakeStrings.sh"
 
 # File generation
-. "scripts/generateFile.sh"
+. "scripts/generateCMakeFile.sh"
+
+# File signature
+#. "scripts/dwfSign.sh"
 
 ##### Script core #####
 ### Interface
@@ -54,7 +60,7 @@ sleep 0.5
 ### Parse User input
 updateZenityProgressBar 0 "Parsing user input" 
 
-library_name=${user_input[0]}
+library_name=$(toAlphaNumName "${user_input[0]}") # Convert to valid library name
 include_base_file=${user_input[1]}
 include_suffix=${user_input[2]}
 version_file=${user_input[3]}
@@ -65,27 +71,48 @@ libraries_suffix=${user_input[7]}
 reference_address=${user_input[8]}
 components_file=${user_input[9]}
 
+# Report
+echo -e "${statusColor}Parsed Library Name : ${NC}$library_name"
+
 updateZenityProgressBar 5
 
 ### Post-process data
+updateZenityProgressBar 5 "Computing File Name"
+file_name="./installModules/" # Location path
+file_name+=$(libraryToModule $library_name) # File name
 
+updateZenityProgressBar 10
 
-sleep 2
+updateZenityProgressBar 10 "Computing Variable names"
+upper_name=$(libraryToVariableCore $library_name)
+
+echo $file_name
+echo $upper_name
+
+sleep 0.1
 
 ### Generate file
-#createCMakeFile $file_name
+updateZenityProgressBar 20 "Creating CMake file"
+createCMakeFile $file_name
 
-#updateZenityProgressBar 10 "Coucou" ${warningColor}
-#sleep 3
-#updateZenityProgressBar 30 "Toto" ${warningColor}
-#sleep 3
-#updateZenityProgressBar 50
-#sleep 1
-#updateZenityProgressBar -23 "Aie" ${warningColor}
-#sleep 3
-#updateZenityProgressBar 99 "CouCoucou"
-#sleep 2
-#updateZenityProgressBar 153
+sleep 0.1
+
+updateZenityProgressBar 30 "Writing module description"
+writeDescription $file_name $library_name $upper_name true $components_list
+
+updateZenityProgressBar 40 "Writing Start message"
+writeStartMessage $file_name $library_name
+#
+#
+#
+#
+#
+#
+
+updateZenityProgressBar 99 "Signing File"
+#DwfSign1_0 $file_name
+
+sleep 0.1
 
 ### CleanUp
 cleanupZenityProgressBar
