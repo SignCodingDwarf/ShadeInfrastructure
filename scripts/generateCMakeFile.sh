@@ -152,11 +152,11 @@ writeDescription() {
 }
 
 ##!
-# @brief Generates general module description
+# @brief Generates module start message
 # @param 1 : File name as a string
 # @param 2 : Library name as a string
 #
-# Generates the general description of a CMake module.
+# Generates module start message indicating that module is run.
 #
 ##
 writeStartMessage() {
@@ -165,3 +165,21 @@ writeStartMessage() {
 	separator $1 
 }
 
+##!
+# @brief Generates instructions to determine if library is found quietly
+# @param 1 : File name as a string
+# @param 2 : Variable base name as a string
+#
+# Generates instructions to determine if the library location is already stored in cache and thus no longer requires search.
+#
+##
+writeFindQuiet() {
+	sectionTitle $1 "Check if data is already stored in cache"
+	echo "if(DEFINED ${2}_INCLUDE AND DEFINED ${2}_LIBRARY)" >> $1
+	echo -e "\tset(${2}_FIND_QUIETLY true)" >> $1
+	echo "else()" >> $1
+	echo -e "\tset(${2}_FIND_QUIETLY false)" >> $1
+	echo "endif()" >> $1
+
+	separator $1 
+}

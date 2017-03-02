@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # file : createModule.sh
-# author : SignCodingDwarf
+# author : SignC0dingDw@rf
 # version : 1.0
 # date : 2016
 # Script allowing to generate a cmake find module for a library from a simple graphical interface
@@ -46,7 +46,7 @@ components_list="" # List of component (empty if no components)
 . "scripts/generateCMakeFile.sh"
 
 # File signature
-#. "scripts/dwfSign.sh"
+. "scripts/dwfSign.sh"
 
 ##### Script core #####
 ### Interface
@@ -55,7 +55,7 @@ zenityInterfaceStatus $interface_status ${statusColor} ${errorColor}
 
 ### Start progress bar
 createZenityProgressBar
-sleep 0.5
+sleep 0.2
 
 ### Parse User input
 updateZenityProgressBar 0 "Parsing user input" 
@@ -69,50 +69,88 @@ static_libraries=${user_input[5]}
 dynamic_libraries=${user_input[6]}
 libraries_suffix=${user_input[7]}
 reference_address=${user_input[8]}
-components_file=${user_input[9]}
+components_file=${user_input[9]} # lcd extension : Library Components Definition 
 
 # Report
 echo -e "${statusColor}Parsed Library Name : ${NC}$library_name"
 
-updateZenityProgressBar 5
-
 ### Post-process data
-updateZenityProgressBar 5 "Computing File Name"
+updateZenityProgressBar 5 "Computing file name"
 file_name="./installModules/" # Location path
 file_name+=$(libraryToModule $library_name) # File name
+sleep 0.1
 
-updateZenityProgressBar 10
-
-updateZenityProgressBar 10 "Computing Variable names"
+updateZenityProgressBar 9 "Computing variable names"
 upper_name=$(libraryToVariableCore $library_name)
+sleep 0.1
+
+updateZenityProgressBar 14 "Computing include base file name"
+# extension .h ou .hpp
+# charactères OK [a-z] [A-Z] [0-9] [_] [-] [. en position 1] hors extension
+sleep 0.1
+
+updateZenityProgressBar 18 "Computing include folder location suffix"
+sleep 0.1
+
+updateZenityProgressBar 22 "Computing version file name"
+sleep 0.1
+
+updateZenityProgressBar 27 "Computing static library name"
+sleep 0.1
+
+updateZenityProgressBar 32 "Computing dynamic library name"
+sleep 0.1
+
+updateZenityProgressBar 36 "Computing library location suffix"
+sleep 0.1
+
+updateZenityProgressBar 41 "Computing library documentation web address"
+sleep 0.1
+
+updateZenityProgressBar 45 "Computing list of library components and dependencies"
+sleep 0.1
 
 echo $file_name
 echo $upper_name
-
 sleep 0.1
 
 ### Generate file
-updateZenityProgressBar 20 "Creating CMake file"
+updateZenityProgressBar 50 "Creating CMake file"
 createCMakeFile $file_name
-
 sleep 0.1
 
-updateZenityProgressBar 30 "Writing module description"
+updateZenityProgressBar 54 "Writing module description"
 writeDescription $file_name $library_name $upper_name true $components_list
-
-updateZenityProgressBar 40 "Writing Start message"
-writeStartMessage $file_name $library_name
-#
-#
-#
-#
-#
-#
-
-updateZenityProgressBar 99 "Signing File"
-#DwfSign1_0 $file_name
-
 sleep 0.1
+
+updateZenityProgressBar 58 "Writing start message"
+writeStartMessage $file_name $library_name
+sleep 0.1
+
+updateZenityProgressBar 63 "Writing cache definition checking"
+writeFindQuiet $file_name $upper_name
+sleep 0.1
+
+updateZenityProgressBar 67 "Writing library compilation type checking"
+sleep 0.1
+
+updateZenityProgressBar 72 "Writing include folder localization"
+sleep 0.1
+
+updateZenityProgressBar 76 "Writing library file localization"
+sleep 0.1
+
+updateZenityProgressBar 81 "Writing find flag setting"
+sleep 0.1
+
+updateZenityProgressBar 85 "Writing library version setting"
+sleep 0.1
+
+updateZenityProgressBar 90 "Writing library informations and error messages display"
+sleep 0.1
+
+updateZenityProgressBar 95 "Signing File"
+DwfSign1_0 $file_name
 
 ### CleanUp
 cleanupZenityProgressBar
