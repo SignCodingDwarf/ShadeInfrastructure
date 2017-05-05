@@ -1,0 +1,59 @@
+#!/usr/bin/env python
+
+## Global import
+import imp
+from optparse import OptionGroup
+
+## Local import
+resourcesPath = "@RESOURCES@"
+
+imp.load_source("dwfoptparse", "".join([resourcesPath,"PythonModules/","dwfoptparse.py"]))
+imp.load_source("unleasher", "".join([resourcesPath,"PythonModules/","unleasher.py"]))
+from dwfoptparse import DwfOptionParser
+from dwfoptparse import DwfHelpFormatter
+from unleasher import Unleasher
+
+dwfFormatter = DwfHelpFormatter()
+
+usage = "%prog [options]"
+parser = DwfOptionParser(usage=usage, version="%prog 0.1", description="Unleash your Dwarven armies in quest for gold, beer, battles, honor \n...\nand programs that can be compiled in an easy and heterogeneous way.", formatter=dwfFormatter)
+group1 = OptionGroup(parser, "GUI management")
+group1.add_option("-g", "--usegui", action="store_true", dest="usegui", default=False, help="enable the use of the GUI (if available).")
+group2 = OptionGroup(parser, "General project properties")
+group2.add_option("-n", "--name", dest="project_name", help="project name.", metavar="NAME")
+group2.add_option("-d", "--description", dest="description", help="project description.")
+group2.add_option("-i", "--installDirectory", dest="directory", help="directory where Shadreinfrastucture will be deployed.")
+group3 = OptionGroup(parser, "Dependencies")
+group3.add_option("--use", action="append", dest="dependencies", help="add project dependency.")
+parser.add_option_group(group1)
+parser.add_option_group(group2)
+parser.add_option_group(group3)
+
+options, args = parser.parse_args()
+
+unl = Unleasher(resourcesPath = resourcesPath, **vars(options)) # Conversion to dictionnary by accessing the __dict__ parameter of the class
+unl.print_status()
+unl.process()
+
+#  ______________________________ 
+# |                              |
+# |    ______________________    |
+# |   |                      |   |
+# |   |         Sign         |   |
+# |   |        C0ding        |   |
+# |   |        Dw@rf         |   |
+# |   |         1.0          |   |
+# |   |______________________|   |
+# |                              |
+# |______________________________|
+#               |  |
+#               |  |
+#               |  |
+#               |  |
+#               |  |
+#               |  |
+#               |  |
+#               |  |
+#               |  |
+#               |  |
+#               |__|
