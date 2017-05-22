@@ -3,7 +3,7 @@
 # file :  install.sh
 # author : SignC0dingDw@rf
 # version : 1.0
-# date : 05 May 2017
+# date : 23 May 2017
 # ShadeInfrastructure installer
 
 ### command line arguments
