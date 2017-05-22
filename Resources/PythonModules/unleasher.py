@@ -107,6 +107,7 @@ class Unleasher:
 #			self._copyToDestination()
 #			self._writeProjectName()
 #			self._writeProjectDescription()
+#			self._writeRessourcesLocation()
 #			self._writeProjectDependencies()
 
 	def _checkParameters(self):

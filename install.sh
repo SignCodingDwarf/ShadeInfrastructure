@@ -173,6 +173,21 @@ if (( $? > 0 )); then
 	fi	
 fi
 
+### Creating resources folder environment variable
+echo -e "${statusColor}Creating Resources location environment variable${NC}"
+if [[ $SHADE_LOCATION != "${resources_folder}/ShadeInfrastructure/" ]]; then # Update only if New Shade Location is required
+	if [ ! -z "$SHADE_LOCATION" ]; then
+		sed -i "s|export SHADE_LOCATION=.*|export SHADE_LOCATION=${resources_folder}/ShadeInfrastructure/|g" ~/.bashrc
+	else
+		echo -e "\n## ShadeInfrastructure resources location" >> ~/.bashrc
+		echo "export SHADE_LOCATION=${resources_folder}/ShadeInfrastructure/" >> ~/.bashrc # Write to profile so that its done every time a console is opened (user restricted)
+	fi
+	if $isSourced; then
+		export SHADE_LOCATION=${resources_folder}/ShadeInfrastructure/ # Do export so that ShadeInfrastructure can be used straightaway !! Works only if script is sourced
+	fi
+fi
+
+### End execution message
 echo -e "${installColor}Installation complete${NC}"
 if $isSourced || $inPath; then
 	echo -e "${installColor}You may now deploy ShadeInfrastructure running${NC}"
