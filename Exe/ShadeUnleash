@@ -87,7 +87,7 @@ options, args = parser.parse_args()
 
 unl = Unleasher(resourcesPath = resourcesPath, **vars(options)) # Conversion to dictionnary by accessing the __dict__ parameter of the class
 unl.print_status()
-unl.process()
+unl.unleash()
 
 #  ______________________________ 
 # |                              |

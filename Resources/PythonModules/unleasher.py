@@ -12,7 +12,7 @@ Simple usage example:
 	shu.process()
 """
 
-__version__ = "1.0.0"
+__version__ = "0.1.0"
 
 __all__ = ["Unleasher"]
 
@@ -97,13 +97,14 @@ class Unleasher:
 
 		self._usegui = guiAvailable and (usegui or not self._nameValid or not self._directoryExists)
 
-	def process(self):
+	def unleash(self):
 		if self._usegui:
 			self._rungui()
  		elif self._errorMsg:
 			self._displayError()
 		else:	
 			print "Processing"
+#			self._createDestinationFolder()
 #			self._copyToDestination()
 #			self._writeProjectName()
 #			self._writeProjectDescription()
@@ -139,6 +140,14 @@ class Unleasher:
 		print "dependencies :",self._dependencies
 		print "resourcesPath :", self._resourcesPath
 		print "*******************************"
+
+	def _createDestinationFolder(self):
+		folder = ""
+		try:
+        		os.makedirs(folder)
+    		except OSError as exception:
+        		return False
+		return True
 
 #  ______________________________ 
 # |                              |
