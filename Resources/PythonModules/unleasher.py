@@ -74,6 +74,7 @@ If not, see <http://www.dwarfvesaregonnabeatyoutodeath.com>.
 import re
 import os
 import errno
+import distutils.dir_util
 
 try:
 	import wxpython
@@ -124,8 +125,9 @@ class Unleasher:
 			if self._verbose:
 				self._statusMsg="Copying To Destination"
 				self._displayStatus()
-#			if not self._copyToDestination():
-#				return None # Exiting on error
+			if not self._copyToDestination():
+				return None # Exiting on error
+
 #			if not self._writeProjectName():
 #				return None # Exiting on error
 #			if not self._writeProjectDescription():
@@ -174,17 +176,20 @@ class Unleasher:
 		try:
         		os.makedirs(self._installDirectory)
     		except OSError as e:
-			if e.errno == errno.EEXIST:
-				self._errorMsg = "Cannot create %s directory.\n It already exists, YOU MORON." % (self._installDirectory)
-			elif e.errno == errno.EACCES:
-				self._errorMsg = "YOU ELF ! You cannot access %s directory.\n Only Dwarves can here be." % (self._installDirectory)
-			elif e.errno == errno.ENOSPC:
-				self._errorMsg = "Space is merely a perception, a concern for mortal men.\n But you are mortal YOU BLITHERING IDIOT and device containing %s is full." % (self._installDirectory)
-			else:
-				self._errorMsg = "STUPID IDIOT, cannot create %s directory." % (self._installDirectory)
+			self._errorMsg = "STUPID IDIOT, cannot create %s directory.\nCreation failed with error\n%s" % (self._installDirectory, e)
 			self._displayError()
         		return False
 		return True
+
+	def _copyToDestination(self):
+		src = "%s%s" % (self._resourcesPath, "Infrastructure/")
+		try:
+			distutils.dir_util.copy_tree(src, self._installDirectory)
+		except distutils.dir_util.DistutilsFileError as e:
+			self._errorMsg = "Cannot copy files to %s directory, YOU MORON.\nCopy failed with error\n%s" % (self._installDirectory, e)
+			self._displayError()			
+		return True
+	
 
 #  ______________________________ 
 # |                              |
