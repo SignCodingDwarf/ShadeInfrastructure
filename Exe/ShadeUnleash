@@ -71,6 +71,7 @@ dwfFormatter = DwfHelpFormatter()
 
 usage = "%prog [options]"
 parser = DwfOptionParser(usage=usage, version="%prog 0.1", description="Unleash your Dwarven armies in quest for gold, beer, battles, honor \n...\nand programs that can be compiled in an easy and heterogeneous way.", formatter=dwfFormatter)
+parser.add_option("-v", "--verbose", action="store_true", dest="verbose", default=False, help="get detailed execution information")
 group1 = OptionGroup(parser, "GUI management")
 group1.add_option("-g", "--usegui", action="store_true", dest="usegui", default=False, help="enable the use of the GUI (if available).")
 group2 = OptionGroup(parser, "General project properties")

@@ -12,7 +12,7 @@ Simple usage example:
 	shu.process()
 """
 
-__version__ = "0.1.0"
+__version__ = "0.2.0"
 
 __all__ = ["Unleasher"]
 
@@ -73,6 +73,7 @@ If not, see <http://www.dwarfvesaregonnabeatyoutodeath.com>.
 ## Global import
 import re
 import os
+import errno
 
 try:
 	import wxpython
@@ -82,7 +83,8 @@ except ImportError:
 	print "GUI module wxpython unavailable. Disabling GUI use"
 
 class Unleasher:
-	def __init__(self, usegui, project_name, description, directory, dependencies, resourcesPath):
+	def __init__(self, usegui, project_name, description, directory, dependencies, verbose, resourcesPath, errorFormat="\033[1;31m", statusFormat="\033[1;32m"):
+		## Project Definition
 		self._project_name = project_name
 		self._description = description
 		if not directory is None :
@@ -90,12 +92,22 @@ class Unleasher:
 		else :
 			self._directory = None
 		self._dependencies = dependencies
-		self._pattern = re.compile("^[A-Za-z][A-Z0-9a-z_.+-]*$") # At least one character which is a letter and then as many letters, numbers, _, ., + or - as you want (^ is for anchor at start and $ for anchor at end ensuring whole string must match pattern)
+		## Verbose Mode
+		self._verbose = verbose
+		## Installation Parameters
 		self._resourcesPath = resourcesPath
+		## Styling
+		self._noFormat = "\033[0m"
+		self._errorFormat = errorFormat
+		self._statusFormat = statusFormat
+		## Check Errors
+		self._pattern = re.compile("^[A-Za-z][A-Z0-9a-z_.+-]*$") # At least one character which is a letter and then as many letters, numbers, _, ., + or - as you want (^ is for anchor at start and $ for anchor at end ensuring whole string must match pattern)
 		self._errorMsg = ''
+		self._statusMsg = ''
 		self._checkParameters()
-
+		## Execution assembled variables
 		self._usegui = guiAvailable and (usegui or not self._nameValid or not self._directoryExists)
+		self._installDirectory="%s/%s/" % (self._directory,self._project_name)
 
 	def unleash(self):
 		if self._usegui:
@@ -103,13 +115,25 @@ class Unleasher:
  		elif self._errorMsg:
 			self._displayError()
 		else:	
-			print "Processing"
-#			self._createDestinationFolder()
-#			self._copyToDestination()
-#			self._writeProjectName()
-#			self._writeProjectDescription()
-#			self._writeRessourcesLocation()
-#			self._writeProjectDependencies()
+			if self._verbose:
+				self._statusMsg="Creating Destination Folder"
+				self._displayStatus()
+			if not self._createDestinationFolder():
+				return None # Exiting on error
+
+			if self._verbose:
+				self._statusMsg="Copying To Destination"
+				self._displayStatus()
+#			if not self._copyToDestination():
+#				return None # Exiting on error
+#			if not self._writeProjectName():
+#				return None # Exiting on error
+#			if not self._writeProjectDescription():
+#				return None # Exiting on error
+#			if not self._writeRessourcesLocation():
+#				return None # Exiting on error
+#			if not self._writeProjectDependencies():
+#				return None # Exiting on error						
 
 	def _checkParameters(self):
 		self._checkName()
@@ -129,7 +153,10 @@ class Unleasher:
 		print "USE GUI"
 
 	def _displayError(self):
-		print "\033[1;31m%s\033[0m" % self._errorMsg
+		print "%s%s%s" % (self._errorFormat, self._errorMsg, self._noFormat)
+
+	def _displayStatus(self):
+		print "%s%s%s" % (self._statusFormat, self._statusMsg, self._noFormat)
 
 	def print_status(self):
 		print "********** Unleasher **********"
@@ -138,14 +165,24 @@ class Unleasher:
 		print "description :",self._description
 		print "directory :",self._directory, "   exists ? ", self._directoryExists
 		print "dependencies :",self._dependencies
+		print "verbose :",self._verbose
 		print "resourcesPath :", self._resourcesPath
+		print "installDirectory :", self._installDirectory
 		print "*******************************"
 
 	def _createDestinationFolder(self):
-		folder = ""
 		try:
-        		os.makedirs(folder)
-    		except OSError as exception:
+        		os.makedirs(self._installDirectory)
+    		except OSError as e:
+			if e.errno == errno.EEXIST:
+				self._errorMsg = "Cannot create %s directory.\n It already exists, YOU MORON." % (self._installDirectory)
+			elif e.errno == errno.EACCES:
+				self._errorMsg = "YOU ELF ! You cannot access %s directory.\n Only Dwarves can here be." % (self._installDirectory)
+			elif e.errno == errno.ENOSPC:
+				self._errorMsg = "Space is merely a perception, a concern for mortal men.\n But you are mortal YOU BLITHERING IDIOT and device containing %s is full." % (self._installDirectory)
+			else:
+				self._errorMsg = "STUPID IDIOT, cannot create %s directory." % (self._installDirectory)
+			self._displayError()
         		return False
 		return True
 
