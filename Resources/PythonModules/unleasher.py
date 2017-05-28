@@ -12,7 +12,7 @@ Simple usage example:
 	shu.process()
 """
 
-__version__ = "0.3.0"
+__version__ = "0.4.0"
 
 __all__ = ["Unleasher"]
 
@@ -118,21 +118,20 @@ class Unleasher:
 			self._displayError()
 		else:	
 			if not self._createDestinationFolder():
-				# No clean up here because we don't know why it exists and don't want to suppress previous code
+				# No clean up here because we don't know why it exists and don't want to suppress previous code or projects
 				return None # Exiting on error
 
 			if not self._copyToDestination():
 				self._removeDestinationFolder() # Clean up because installation failed
 				return None # Exiting on error
 
-#			if not self._writeProjectName():
-#				return None # Exiting on error
-#			if not self._writeProjectDescription():
-#				return None # Exiting on error
-#			if not self._writeRessourcesLocation():
-#				return None # Exiting on error
-#			if not self._writeProjectDependencies():
-#				return None # Exiting on error						
+			if not self._writeProjectConfig():
+				self._removeDestinationFolder() # Clean up because installation failed
+				return None # Exiting on error	
+
+		if self._verbose:
+			self._statusMsg="\nDone"
+			self._displayStatus()			
 
 	def _checkParameters(self):
 		self._checkName()
@@ -201,6 +200,29 @@ class Unleasher:
 			self._errorMsg = "Cannot copy files to %s directory, YOU MORON.\nCopy failed with error\n%s" % (self._installDirectory, e)
 			self._displayError()
 			return False	
+		return True
+
+	def _writeProjectConfig(self):
+		if self._verbose:
+			self._statusMsg="Creating CMakeLists.txt file"
+			self._displayStatus()
+		replacements = {"@NAME@":self._project_name, "@DESCRIPTION@":self._description, "@LOGO@":'', "@DEPENDENCIES@":''}
+		try:
+			template=open("%s%s" % (self._resourcesPath,"Template/CMakeLists.txt"))
+		except IOError as e:		
+			self._errorMsg = "Cannot open file %s%s, YOU MORON.\nOpening failed with error\n%s" % (self._resourcesPath,"Template/CMakeLists.txt", e)
+			self._displayError()
+			return False
+		try:
+			destination=open("%s%s" % (self._installDirectory,"CMakeLists.txt"), "w")
+		except IOError as e:		
+			self._errorMsg = "Cannot open file %s%s, YOU BLITHERING IDIOT.\nOpening failed with error\n%s" % (self._installDirectory,"Template/CMakeLists.txt", e)
+			self._displayError()
+			return False
+		for line in template:
+        		for toReplace, Replacement in replacements.iteritems():
+           			line = line.replace(toReplace, Replacement)
+        		destination.write(line)
 		return True
 	
 
