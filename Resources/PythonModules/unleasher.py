@@ -12,7 +12,7 @@ Simple usage example:
 	shu.process()
 """
 
-__version__ = "0.2.0"
+__version__ = "0.3.0"
 
 __all__ = ["Unleasher"]
 
@@ -75,6 +75,7 @@ import re
 import os
 import errno
 import distutils.dir_util
+import shutil
 
 try:
 	import wxpython
@@ -116,16 +117,12 @@ class Unleasher:
  		elif self._errorMsg:
 			self._displayError()
 		else:	
-			if self._verbose:
-				self._statusMsg="Creating Destination Folder"
-				self._displayStatus()
 			if not self._createDestinationFolder():
+				# No clean up here because we don't know why it exists and don't want to suppress previous code
 				return None # Exiting on error
 
-			if self._verbose:
-				self._statusMsg="Copying To Destination"
-				self._displayStatus()
 			if not self._copyToDestination():
+				self._removeDestinationFolder() # Clean up because installation failed
 				return None # Exiting on error
 
 #			if not self._writeProjectName():
@@ -173,6 +170,9 @@ class Unleasher:
 		print "*******************************"
 
 	def _createDestinationFolder(self):
+		if self._verbose:
+			self._statusMsg="Creating Destination Folder"
+			self._displayStatus()
 		try:
         		os.makedirs(self._installDirectory)
     		except OSError as e:
@@ -181,13 +181,26 @@ class Unleasher:
         		return False
 		return True
 
+	def _removeDestinationFolder(self):
+		if self._verbose:
+			self._statusMsg="Clean up"
+			self._displayStatus()
+		try:
+			shutil.rmtree(self._installDirectory)
+		except:
+			pass		
+
 	def _copyToDestination(self):
+		if self._verbose:
+			self._statusMsg="Copying To Destination"
+			self._displayStatus()
 		src = "%s%s" % (self._resourcesPath, "Infrastructure/")
 		try:
 			distutils.dir_util.copy_tree(src, self._installDirectory)
 		except distutils.dir_util.DistutilsFileError as e:
 			self._errorMsg = "Cannot copy files to %s directory, YOU MORON.\nCopy failed with error\n%s" % (self._installDirectory, e)
-			self._displayError()			
+			self._displayError()
+			return False	
 		return True
 	
 
