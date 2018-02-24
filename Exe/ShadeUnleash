@@ -56,10 +56,11 @@ If not, see <http://www.dwarfvesaregonnabeatyoutodeath.com>.
 
 ## Global import
 import imp
+import os
 from optparse import OptionGroup
 
 ## Local import
-resourcesPath = "@RESOURCES@"
+resourcesPath = os.environ['SHADE_LOCATION']
 
 imp.load_source("dwfoptparse", "".join([resourcesPath,"PythonModules/","dwfoptparse.py"]))
 imp.load_source("unleasher", "".join([resourcesPath,"PythonModules/","unleasher.py"]))

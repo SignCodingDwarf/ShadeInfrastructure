@@ -2,8 +2,8 @@
 
 # file :  install.sh
 # author : SignC0dingDw@rf
-# version : 1.1
-# date : 23 May 2017
+# version : 1.2
+# date : 24 February 2018
 # ShadeInfrastructure installer
 
 ### command line arguments
@@ -151,10 +151,6 @@ else
 	inPath=true
 fi
 
-### Updating Resources location in ShadeUnleash
-echo -e "${statusColor}Configuring ShadeUnleash file${NC}"
-sudo sed -i "s|@RESOURCES@|${resources_folder}/ShadeInfrastructure/|g" ${install_folder}/ShadeUnleash # Here we can add the / after ${resources_folder} cause readlink always remove the trailing / in folder name
-
 ### Copying resources folder
 echo -e "${statusColor}Copying Resources to ${resources_folder}${NC}"
 if [ -d "${resources_folder}/ShadeInfrastructure/" ]; then
@@ -189,7 +185,7 @@ fi
 
 ### End execution message
 echo -e "${installColor}Installation complete${NC}"
-if $isSourced || $inPath; then
+if $isSourced; then
 	echo -e "${installColor}You may now deploy ShadeInfrastructure running${NC}"
 	echo -e "${installColor}ShadeUnleash${NC}"
 	echo -e "${installColor}To see more details on how to use ShadeUnleash, run ${NC}"
