@@ -1,0 +1,138 @@
+#!/bin/bash
+
+# file : ShadeRun
+# author : SignC0dingDw@rf
+# version : 0.1
+# date : 24 July 2018
+# Script to run tools from the ShadeInfrastructure
+
+### Usage
+# ./ShadeRun [options] <tool> [ [tool_option] <tool_argument> ]
+##            General Options
+# -h or --help : show this help message and exit
+# --version : show program's version number and exit
+##           Tool Listing Options
+# -l or --list : list all available tools on your system and exit
+
+### Output
+#
+## 0 : Command successfull
+#
+## 1 : Invalid Command
+#
+###
+
+### Version STR
+VERSION_STR="0.1"
+
+
+### Modules inclusion
+. "infrastructureModules/listTools.sh"
+
+### Initialization
+# Colors
+usageColor='\033[1;34m' #Help on command is printed in light blue
+descriptionColor='\033[1;31m' #Help on command is printed in light red
+helpOptionsColor='\033[1;32m' #Help on options is printed in light green
+helpCategoryColor="\033[1;33m" # Help options categories are printed in yellow
+ToolListHeadColor="\033[1;33m" # Head of tool list is printed in yellow
+NC='\033[0m' # No Color
+
+# Behavior variables
+COMMAND="" # Command to run
+TOOL_ID=1 # Argument ID containing the tool
+
+# Functions
+##!
+# @brief Display Usage Information of Shade Run Command
+##
+Usage()
+{
+    echo -e "Usage \n"
+    echo -e "${usageColor} ./ShadeRun [options] <tool> [ [tool_option] <tool_argument> ]${NC}\n"
+    echo -e "${descriptionColor}Summon a Dwarven program to help you in your quest of"
+    echo -e "..."
+    echo -e "gold, beer and homogeneous program deployment${NC}\n"
+    echo -e "Options:"
+    echo -e "${helpCategoryColor}----- General Options -----${NC}"
+    echo -e "${helpOptionsColor}-h${NC} or ${helpOptionsColor}--help${NC}\t\t show this help message and exit"
+    echo -e "${helpOptionsColor}-version${NC}\t\t show program's version number and exit"
+    echo -e ""
+    echo -e "${helpCategoryColor}----- Tool Listing Options -----${NC}"
+    echo -e "${helpOptionsColor}-l${NC} or ${helpOptionsColor}--list${NC}\t\t list all available tools on your system and exit"
+    echo -e ""
+}
+
+### List available tools
+devTools="$(ListDevTools)"
+userTools="$(ListUserTools)"
+
+### Parse command line arguments
+for i in "$@" # for every input argument
+do
+	case $i in
+		-h|--help) # if asked to render help
+		Usage # Print help and exit
+        exit 0
+		;;
+		--version) # if asked to display version
+        echo -e "ShadeRun V${VERSION_STR}" # Print version and exit
+        exit 0		
+		;;
+		-l|--list) # if asked to list options
+        echo -e "${ToolListHeadColor}List of available tools${NC}\n"
+		printf '\t%s\n' ${devTools}
+        printf '\t%s\n' ${userTools}
+        echo ""
+        exit 0
+		;;
+		*) #default check if argument is in list
+        if IsInToolList "${devTools}" "$i"
+        then
+            COMMAND="${SHADE_LOCATION}Tools/${i}"
+            IS_DEV=true
+            break
+        elif IsInToolList "${userTools}" "$i" 
+        then
+            COMMAND="tools/${i}"
+            IS_DEV=true
+            break
+        else # First Argument should be valid option or command name
+            Usage
+            exit 1
+        fi
+		;;
+	esac
+    ((TOOL_ID++))
+done
+
+### Run command
+if [[ $TOOL_ID -eq $# ]]; then # if command has no argument 
+$COMMAND # Simply run it
+else # Otherwise call it with all arguments after TOOL_ID
+((TOOL_ID++))
+$COMMAND ${@:${TOOL_ID}:$#}
+fi
+
+#  ______________________________ 
+# |                              |
+# |    ______________________    |
+# |   |                      |   |
+# |   |         Sign         |   |
+# |   |        C0ding        |   |
+# |   |        Dw@rf         |   |
+# |   |         1.0          |   |
+# |   |______________________|   |
+# |                              |
+# |______________________________|
+#               |  |
+#               |  |
+#               |  |
+#               |  |
+#               |  |
+#               |  |
+#               |  |
+#               |  |
+#               |  |
+#               |  |
+#               |__|
