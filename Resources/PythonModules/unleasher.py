@@ -204,25 +204,18 @@ class Unleasher:
 
 	def _writeProjectConfig(self):
 		if self._verbose:
-			self._statusMsg="Creating CMakeLists.txt file"
+			self._statusMsg="Creating project.dconf file"
 			self._displayStatus()
-		replacements = {"@NAME@":self._project_name, "@DESCRIPTION@":self._description, "@LOGO@":'', "@DEPENDENCIES@":''}
+		fields = {"name":self._project_name, "description":self._description, "logo":''}
 		try:
-			template=open("%s%s" % (self._resourcesPath,"Template/CMakeLists.txt"))
+			destination=open("%s%s" % (self._installDirectory,"config/project.dconf"), "w")
 		except IOError as e:		
-			self._errorMsg = "Cannot open file %s%s, YOU MORON.\nOpening failed with error\n%s" % (self._resourcesPath,"Template/CMakeLists.txt", e)
+			self._errorMsg = "Cannot open file %s%s, YOU BLITHERING IDIOT.\nOpening failed with error\n%s" % (self._installDirectory,"config/project.dconf", e)
 			self._displayError()
 			return False
-		try:
-			destination=open("%s%s" % (self._installDirectory,"CMakeLists.txt"), "w")
-		except IOError as e:		
-			self._errorMsg = "Cannot open file %s%s, YOU BLITHERING IDIOT.\nOpening failed with error\n%s" % (self._installDirectory,"Template/CMakeLists.txt", e)
-			self._displayError()
-			return False
-		for line in template:
-        		for toReplace, Replacement in replacements.iteritems():
-           			line = line.replace(toReplace, Replacement)
-        		destination.write(line)
+		for field,value in fields.iteritems():
+			destination.write("%s=%s\n" % (field,value))
+		destination.close()
 		return True
 	
 
