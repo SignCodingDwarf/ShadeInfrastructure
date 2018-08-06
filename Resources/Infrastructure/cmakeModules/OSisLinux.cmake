@@ -9,22 +9,46 @@
 # Once done this will define :
 # 
 
-message(STATUS "Checking Operating System")
+include(MessageDisplay REQUIRED)
+
+displayMessage(STATUS "Checking Operating System")
 
 if(NOT CMAKE_HOST_UNIX)
 
-	message(STATUS "Windows User Detected")
-	message(FATAL_ERROR "Hey Windows User, this project currently only supports Linux-based Operating Systems !!!")
+	displayMessage(STATUS "Windows User Detected")
+	displayMessage(FATAL_ERROR "Hey Windows User, this project currently only supports Linux-based Operating Systems !!!")
 
 else()
 	if(CMAKE_HOST_APPLE)
-		message(STATUS "Mac OSX User Detected")
-		message(FATAL_ERROR "Hey Apple User, this project currently only supports Linux-based Operating Systems !!!")
+		displayMessage(STATUS "Mac OSX User Detected")
+		displayMessage(FATAL_ERROR "Hey Apple User, this project currently only supports Linux-based Operating Systems !!!")
 	elseif(CMAKE_HOST_CYGWIN)
-		message(STATUS "Cygwin User Detected")
-		message(FATAL_ERROR "Hey Windows Cygwin User, this project currently only supports Linux-based Operating Systems !!!")
+		displayMessage(STATUS "Cygwin User Detected")
+		displayMessage(FATAL_ERROR "Hey Windows Cygwin User, this project currently only supports Linux-based Operating Systems !!!")
 	else()
-		message(STATUS "Linux User Detected, installation proceeding")
+		displayMessage(STATUS "Linux User Detected, installation proceeding")
 	endif()
 endif()
 
+#  ______________________________ 
+# |                              |
+# |    ______________________    |
+# |   |                      |   |
+# |   |         Sign         |   |
+# |   |        C0ding        |   |
+# |   |        Dw@rf         |   |
+# |   |         1.0          |   |
+# |   |______________________|   |
+# |                              |
+# |______________________________|
+#               |  |
+#               |  |
+#               |  |
+#               |  |
+#               |  |
+#               |  |
+#               |  |
+#               |  |
+#               |  |
+#               |  |
+#               |__|
