@@ -12,7 +12,7 @@ Simple usage example:
 	upd.update()
 """
 
-__version__ = "1.0.0"
+__version__ = "1.1.0"
 
 __all__ = ["InfrastructureUpdater"]
 
@@ -100,17 +100,16 @@ class InfrastructureUpdater:
         if(self._verbose):            
             print "Calling Program : ", called_prog
         try:
-#            os.system("echo toto > /usr/share/toto.tmp")
             call(called_prog, shell=True)
-            return True
+            return 0
         except OSError as e:
             self._errorMsg = "Command call failed with error\n%s" % e
             self._displayError()
-            return False
+            return 1
         except ValueError as e:
             self._errorMsg = "Popen call failed with error\n%s" % e
             self._displayError()
-            return False
+            return 1
 
     def _displayError(self):
         print "%s%s%s" % (self._errorFormat, self._errorMsg, self._noFormat)

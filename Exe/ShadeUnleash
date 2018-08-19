@@ -1,7 +1,29 @@
 #!/usr/bin/env python
 
+""" ShadeUnleash
+A tool allowing to unleash infrastructure.
+
+By SignC0dingDw@rf <dwarfcieofchaos@gmail.com>
+
+### Usage
+# ShadeUnleash [options]
+##            General Options
+# -h or --help : show this help message and exit
+# --version : show program's version number and exit
+# -v or --verbose : run command in verbose mode
+
+### Exit Code
+#
+# 0 : Command successfull
+# 1 : Invalid command argument
+# 2 : Creation of destination folder failed
+# 3 : Failed to copy infrastructure to destination
+# 4 : Writing configuration file failed
+#
 """
-Copyright (c) 2017 SignC0dingDw@rf. All rights reserved
+
+"""
+Copyright (c) 2018 SignC0dingDw@rf. All rights reserved
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -18,7 +40,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 
 """
-Copywrong (w) 2017 SignC0dingDw@rf. All profits reserved.
+Copywrong (w) 2018 SignC0dingDw@rf. All profits reserved.
 
 This program is dwarven software: you can redistribute it and/or modify
 it provided that the following conditions are met:
@@ -57,6 +79,7 @@ If not, see <http://www.dwarfvesaregonnabeatyoutodeath.com>.
 ## Global import
 import imp
 import os
+import sys
 from optparse import OptionGroup
 
 ## Local import
@@ -88,7 +111,9 @@ parser.add_option_group(group3)
 options, args = parser.parse_args()
 
 unl = Unleasher(resourcesPath = resourcesPath, **vars(options)) # Conversion to dictionnary by accessing the __dict__ parameter of the class
-unl.unleash()
+code = unl.unleash()
+
+sys.exit(code)
 
 #  ______________________________ 
 # |                              |

@@ -12,12 +12,12 @@ Simple usage example:
 	shu.process()
 """
 
-__version__ = "0.4.0"
+__version__ = "0.5.0"
 
 __all__ = ["Unleasher"]
 
 __copyright__ = """
-Copyright (c) 2017 SignC0dingDw@rf. All rights reserved
+Copyright (c) 2018 SignC0dingDw@rf. All rights reserved
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -34,7 +34,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 
 __copywrong__ = """
-Copywrong (w) 2017 SignC0dingDw@rf. All profits reserved.
+Copywrong (w) 2018 SignC0dingDw@rf. All profits reserved.
 
 This program is dwarven software: you can redistribute it and/or modify
 it provided that the following conditions are met:
@@ -85,7 +85,7 @@ except ImportError:
 	print "GUI module wxpython unavailable. Disabling GUI use"
 
 class Unleasher:
-	def __init__(self, usegui, project_name, description, directory, dependencies, verbose, resourcesPath, errorFormat="\033[1;31m", statusFormat="\033[1;32m"):
+    def __init__(self, usegui, project_name, description, directory, dependencies, verbose, resourcesPath, errorFormat="\033[1;31m", statusFormat="\033[1;32m"):
 		## Project Definition
 		self._project_name = project_name
 		self._description = description
@@ -111,52 +111,55 @@ class Unleasher:
 		self._usegui = guiAvailable and (usegui or not self._nameValid or not self._directoryExists)
 		self._installDirectory="%s/%s/" % (self._directory,self._project_name)
 
-	def unleash(self):
-		if self._usegui:
-			self._rungui()
- 		elif self._errorMsg:
-			self._displayError()
-		else:	
-			if not self._createDestinationFolder():
-				# No clean up here because we don't know why it exists and don't want to suppress previous code or projects
-				return None # Exiting on error
+    def unleash(self):
+        if self._usegui:
+            return self._rungui()
+        elif self._errorMsg:
+            self._displayError()
+            return 1
+        else:	
+            if not self._createDestinationFolder():
+                # No clean up here because we don't know why it exists and don't want to suppress previous code or projects
+                return 2 # Exiting on error
 
-			if not self._copyToDestination():
-				self._removeDestinationFolder() # Clean up because installation failed
-				return None # Exiting on error
+            if not self._copyToDestination():
+                self._removeDestinationFolder() # Clean up because installation failed
+                return 3 # Exiting on error
 
-			if not self._writeProjectConfig():
-				self._removeDestinationFolder() # Clean up because installation failed
-				return None # Exiting on error	
+            if not self._writeProjectConfig():
+                self._removeDestinationFolder() # Clean up because installation failed
+                return 4 # Exiting on error	
 
-		if self._verbose:
-			self._statusMsg="\nDone"
-			self._displayStatus()			
+        if self._verbose:
+            self._statusMsg="\nDone"
+            self._displayStatus()			
+        return 0
 
-	def _checkParameters(self):
+    def _checkParameters(self):
 		self._checkName()
 		self._checkDirectory()
 
-	def _checkName(self):
+    def _checkName(self):
 		self._nameValid = not self._project_name is None and not self._pattern.match(self._project_name) is None
 		if not self._nameValid:
 			self._errorMsg = "\nThe project name %s is invalid, YOU MORON.\nYou must use a name starting with a letter and containing letters, numbers, or special characters _ . + - only.\n" % self._project_name 
 
-	def _checkDirectory(self):
+    def _checkDirectory(self):
 		self._directoryExists = not self._directory is None and os.path.isdir(self._directory)
 		if not self._directoryExists:
 			self._errorMsg = "%s\nBLITHERING IDIOT, the directory %s doesn't even exist.\nHOW HARD CAN IT BE TO INSTALL TO AN EXISTING FOLDER ?\n" % (self._errorMsg, self._directory)  
 
-	def _rungui(self):
-		print "USE GUI"
+    def _rungui(self):
+        print "USE GUI"
+        return 0
 
-	def _displayError(self):
+    def _displayError(self):
 		print "%s%s%s" % (self._errorFormat, self._errorMsg, self._noFormat)
 
-	def _displayStatus(self):
+    def _displayStatus(self):
 		print "%s%s%s" % (self._statusFormat, self._statusMsg, self._noFormat)
 
-	def print_status(self):
+    def print_status(self):
 		print "********** Unleasher **********"
 		print "usegui :",self._usegui
 		print "name :",self._project_name, "   is valid ? ", self._nameValid
@@ -168,19 +171,19 @@ class Unleasher:
 		print "installDirectory :", self._installDirectory
 		print "*******************************"
 
-	def _createDestinationFolder(self):
+    def _createDestinationFolder(self):
 		if self._verbose:
 			self._statusMsg="Creating Destination Folder"
 			self._displayStatus()
 		try:
-        		os.makedirs(self._installDirectory)
-    		except OSError as e:
-			self._errorMsg = "STUPID IDIOT, cannot create %s directory.\nCreation failed with error\n%s" % (self._installDirectory, e)
-			self._displayError()
-        		return False
+		    os.makedirs(self._installDirectory)
+		except OSError as e:
+		    self._errorMsg = "STUPID IDIOT, cannot create %s directory.\nCreation failed with error\n%s" % (self._installDirectory, e)
+		    self._displayError()
+    		return False
 		return True
 
-	def _removeDestinationFolder(self):
+    def _removeDestinationFolder(self):
 		if self._verbose:
 			self._statusMsg="Clean up"
 			self._displayStatus()
@@ -189,7 +192,7 @@ class Unleasher:
 		except:
 			pass		
 
-	def _copyToDestination(self):
+    def _copyToDestination(self):
 		if self._verbose:
 			self._statusMsg="Copying To Destination"
 			self._displayStatus()
@@ -202,7 +205,7 @@ class Unleasher:
 			return False	
 		return True
 
-	def _writeProjectConfig(self):
+    def _writeProjectConfig(self):
 		if self._verbose:
 			self._statusMsg="Creating project.dconf file"
 			self._displayStatus()

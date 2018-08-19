@@ -80,6 +80,7 @@ If not, see <http://www.dwarfvesaregonnabeatyoutodeath.com>.
 ## Global import
 import imp
 import os
+import sys
 from optparse import OptionGroup
 
 ## Local import
@@ -101,7 +102,9 @@ parser.add_option("-v", "--verbose", action="store_true", dest="verbose", defaul
 options, args = parser.parse_args()
 
 updater = InfrastructureUpdater(**vars(options)) # Conversion to dictionnary by accessing the __dict__ parameter of the class
-updater.update()
+code = updater.update()
+
+sys.exit(0)
 
 #  ______________________________ 
 # |                              |
