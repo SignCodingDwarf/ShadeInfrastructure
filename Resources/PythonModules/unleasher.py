@@ -172,16 +172,16 @@ class Unleasher:
 		print "*******************************"
 
     def _createDestinationFolder(self):
-		if self._verbose:
-			self._statusMsg="Creating Destination Folder"
-			self._displayStatus()
-		try:
-		    os.makedirs(self._installDirectory)
-		except OSError as e:
-		    self._errorMsg = "STUPID IDIOT, cannot create %s directory.\nCreation failed with error\n%s" % (self._installDirectory, e)
-		    self._displayError()
-    		return False
-		return True
+        if self._verbose:
+            self._statusMsg="Creating Destination Folder"
+            self._displayStatus()
+        try:
+            os.makedirs(self._installDirectory)
+        except OSError as e:
+            self._errorMsg = "STUPID IDIOT, cannot create %s directory.\nCreation failed with error\n%s" % (self._installDirectory, e)
+            self._displayError()
+            return False
+        return True
 
     def _removeDestinationFolder(self):
 		if self._verbose:
