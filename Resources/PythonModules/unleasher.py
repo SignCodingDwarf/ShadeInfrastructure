@@ -9,10 +9,10 @@ Simple usage example:
 	from unleasher import Unleasher
 
 	shu = Unleasher(usegui = False, project_name = "Dummy", description = "A Dummy Project", directory="/home/Moria", dependencies="", ressourcesPath="/usr/local/share/")
-	shu.process()
+	code = shu.process()
 """
 
-__version__ = "0.5.0"
+__version__ = "0.6.0"
 
 __all__ = ["Unleasher"]
 
@@ -76,6 +76,7 @@ import os
 import errno
 import distutils.dir_util
 import shutil
+import imp
 
 try:
 	import wxpython
@@ -84,38 +85,35 @@ except ImportError:
 	guiAvailable = False
 	print "GUI module wxpython unavailable. Disabling GUI use"
 
-class Unleasher:
-    def __init__(self, usegui, project_name, description, directory, dependencies, verbose, resourcesPath, errorFormat="\033[1;31m", statusFormat="\033[1;32m"):
-		## Project Definition
-		self._project_name = project_name
-		self._description = description
-		if not directory is None :
-			self._directory = os.path.abspath(directory)
-		else :
-			self._directory = None
-		self._dependencies = dependencies
-		## Verbose Mode
-		self._verbose = verbose
-		## Installation Parameters
-		self._resourcesPath = resourcesPath
-		## Styling
-		self._noFormat = "\033[0m"
-		self._errorFormat = errorFormat
-		self._statusFormat = statusFormat
-		## Check Errors
-		self._pattern = re.compile("^[A-Za-z][A-Z0-9a-z_.+-]*$") # At least one character which is a letter and then as many letters, numbers, _, ., + or - as you want (^ is for anchor at start and $ for anchor at end ensuring whole string must match pattern)
-		self._errorMsg = ''
-		self._statusMsg = ''
-		self._checkParameters()
-		## Execution assembled variables
-		self._usegui = guiAvailable and (usegui or not self._nameValid or not self._directoryExists)
-		self._installDirectory="%s/%s/" % (self._directory,self._project_name)
+## Local import
+resourcesPath = os.environ['SHADE_LOCATION']
+imp.load_source("abstracttool", "".join([resourcesPath,"PythonModules/","abstracttool.py"]))
+from abstracttool import AbstractTool
 
-    def unleash(self):
+class Unleasher(AbstractTool):
+    def __init__(self, usegui, project_name, description, directory, dependencies, verbose, resourcesPath, errorFormat="\033[1;31m", warningFormat="\033[1;33m", statusFormat="\033[1;32m"):
+        ## Inherited constructors
+        AbstractTool.__init__(self, verbose, errorFormat, warningFormat, statusFormat)
+        ## Project Definition
+        self._project_name = project_name
+        self._description = description
+        if not directory is None :
+            self._directory = os.path.abspath(directory)
+        else :
+            self._directory = None
+        self._dependencies = dependencies
+        ## Installation Parameters
+        self._resourcesPath = resourcesPath
+        ## Check Errors
+        self._parametersValid = self._checkParameters()		
+        ## Execution assembled variables
+        self._usegui = guiAvailable and (usegui or not self._parametersValid)
+        self._installDirectory="%s/%s/" % (self._directory,self._project_name)
+
+    def process(self):
         if self._usegui:
             return self._rungui()
-        elif self._errorMsg:
-            self._displayError()
+        elif not self._parametersValid:
             return 1
         else:	
             if not self._createDestinationFolder():
@@ -130,96 +128,80 @@ class Unleasher:
                 self._removeDestinationFolder() # Clean up because installation failed
                 return 4 # Exiting on error	
 
-        if self._verbose:
-            self._statusMsg="\nDone"
-            self._displayStatus()			
+        self._displayStatus("\nDone")			
         return 0
 
+    def print_status(self):
+        print "********** Unleasher **********"
+        print "usegui :",self._usegui
+        print "validity :",self._parametersValid
+        print "name :",self._project_name
+        print "description :",self._description
+        print "directory :",self._directory
+        print "dependencies :",self._dependencies
+        print "verbose :",self._verbose
+        print "resourcesPath :", self._resourcesPath
+        print "installDirectory :", self._installDirectory
+        print "*******************************"
+
     def _checkParameters(self):
-		self._checkName()
-		self._checkDirectory()
+	    return self._checkName() and self._checkDirectory()
 
     def _checkName(self):
-		self._nameValid = not self._project_name is None and not self._pattern.match(self._project_name) is None
-		if not self._nameValid:
-			self._errorMsg = "\nThe project name %s is invalid, YOU MORON.\nYou must use a name starting with a letter and containing letters, numbers, or special characters _ . + - only.\n" % self._project_name 
+        pattern = re.compile("^[A-Za-z][A-Z0-9a-z_.+-]*$") # At least one character which is a letter and then as many letters, numbers, _, ., + or - as you want (^ is for anchor at start and $ for anchor at end ensuring whole string must match pattern)
+        nameValid = not self._project_name is None and not pattern.match(self._project_name) is None
+        if not nameValid:
+            self._displayError("\nThe project name %s is invalid, YOU MORON.\nYou must use a name starting with a letter and containing letters, numbers, or special characters _ . + - only.\n" % self._project_name) 
+        return nameValid
 
     def _checkDirectory(self):
-		self._directoryExists = not self._directory is None and os.path.isdir(self._directory)
-		if not self._directoryExists:
-			self._errorMsg = "%s\nBLITHERING IDIOT, the directory %s doesn't even exist.\nHOW HARD CAN IT BE TO INSTALL TO AN EXISTING FOLDER ?\n" % (self._errorMsg, self._directory)  
+        directoryExists = not self._directory is None and os.path.isdir(self._directory)
+        if not directoryExists:
+            self._displayError("\nBLITHERING IDIOT, the directory %s doesn't even exist.\nHOW HARD CAN IT BE TO INSTALL TO AN EXISTING FOLDER ?\n" % self._directory)
+        return directoryExists  
 
     def _rungui(self):
         print "USE GUI"
         return 0
 
-    def _displayError(self):
-		print "%s%s%s" % (self._errorFormat, self._errorMsg, self._noFormat)
-
-    def _displayStatus(self):
-		print "%s%s%s" % (self._statusFormat, self._statusMsg, self._noFormat)
-
-    def print_status(self):
-		print "********** Unleasher **********"
-		print "usegui :",self._usegui
-		print "name :",self._project_name, "   is valid ? ", self._nameValid
-		print "description :",self._description
-		print "directory :",self._directory, "   exists ? ", self._directoryExists
-		print "dependencies :",self._dependencies
-		print "verbose :",self._verbose
-		print "resourcesPath :", self._resourcesPath
-		print "installDirectory :", self._installDirectory
-		print "*******************************"
-
     def _createDestinationFolder(self):
-        if self._verbose:
-            self._statusMsg="Creating Destination Folder"
-            self._displayStatus()
+        self._displayStatus("Creating Destination Folder")
         try:
             os.makedirs(self._installDirectory)
         except OSError as e:
-            self._errorMsg = "STUPID IDIOT, cannot create %s directory.\nCreation failed with error\n%s" % (self._installDirectory, e)
-            self._displayError()
+            self._displayError("STUPID IDIOT, cannot create %s directory.\nCreation failed with error\n%s" % (self._installDirectory, e))
             return False
         return True
 
     def _removeDestinationFolder(self):
-		if self._verbose:
-			self._statusMsg="Clean up"
-			self._displayStatus()
+		self._displayStatus("Clean up")
 		try:
 			shutil.rmtree(self._installDirectory)
 		except:
 			pass		
 
     def _copyToDestination(self):
-		if self._verbose:
-			self._statusMsg="Copying To Destination"
-			self._displayStatus()
+		self._displayStatus("Copying infrastructure to destination")
 		src = "%s%s" % (self._resourcesPath, "Infrastructure/")
 		try:
 			distutils.dir_util.copy_tree(src, self._installDirectory)
-		except distutils.dir_util.DistutilsFileError as e:
-			self._errorMsg = "Cannot copy files to %s directory, YOU MORON.\nCopy failed with error\n%s" % (self._installDirectory, e)
-			self._displayError()
+		except distutils.dir_util.DistutilsFileError as e: 
+			self._displayError("Cannot copy files to %s directory, YOU MORON.\nCopy failed with error\n%s" % (self._installDirectory, e))
 			return False	
 		return True
 
     def _writeProjectConfig(self):
-		if self._verbose:
-			self._statusMsg="Creating project.dconf file"
-			self._displayStatus()
-		fields = {"name":self._project_name, "description":self._description, "logo":''}
-		try:
-			destination=open("%s%s" % (self._installDirectory,"config/project.dconf"), "w")
-		except IOError as e:		
-			self._errorMsg = "Cannot open file %s%s, YOU BLITHERING IDIOT.\nOpening failed with error\n%s" % (self._installDirectory,"config/project.dconf", e)
-			self._displayError()
-			return False
-		for field,value in fields.iteritems():
-			destination.write("%s=%s\n" % (field,value))
-		destination.close()
-		return True
+        self._displayStatus("Creating project.dconf file")
+        fields = {"name":self._project_name, "description":self._description, "logo":''}
+        try:
+            destination=open("%s%s" % (self._installDirectory,"config/project.dconf"), "w")
+        except IOError as e:		
+            self._displayError("Cannot open file %s%s, YOU BLITHERING IDIOT.\nOpening failed with error\n%s" % (self._installDirectory,"config/project.dconf", e))
+            return False
+        for field,value in fields.iteritems():
+            destination.write("%s=%s\n" % (field,value))
+        destination.close()
+        return True
 	
 
 #  ______________________________ 

@@ -1,20 +1,18 @@
 #!/usr/bin/env python
 
-""" Module infrastructureupdater
-A module extending the optparse module to allow a better formatting of option parser help on linux terminal.
+""" Module abstracttool
+A Module defining the base structure of all infrastructure tools.
 
 By SignC0dingDw@rf <dwarfcieofchaos@gmail.com>
 
-Simple usage example:
-	from infrastructureupdater import InfrastructureUpdater
+A tool constructed following this class only needs to be configured via the objetc constructor and then call the process() method to do the job.
 
-	upd = InfrastructureUpdater(verbose = True)
-	code = upd.process()
+The process() mehtod shall return an error code which will be used as tool command return code.
 """
 
-__version__ = "2.0.0"
+__version__ = "0.1.0"
 
-__all__ = ["InfrastructureUpdater"]
+__all__ = ["AbstractTool"]
 
 __copyright__ = """
 Copyright (c) 2018 SignC0dingDw@rf. All rights reserved
@@ -71,56 +69,54 @@ If not, see <http://www.dwarfvesaregonnabeatyoutodeath.com>.
 """
 
 ## Global import
-import os
-from subprocess import call
-import imp
+import abc
 
-## Local import
-resourcesPath = os.environ['SHADE_LOCATION']
-imp.load_source("abstracttool", "".join([resourcesPath,"PythonModules/","abstracttool.py"]))
-from abstracttool import AbstractTool
+## Module content
+class AbstractTool:
+    __metaclass__ = abc.ABCMeta
 
-class InfrastructureUpdater(AbstractTool):
     def __init__(self, verbose, errorFormat="\033[1;31m", warningFormat="\033[1;33m", statusFormat="\033[1;32m"):
-        ## Inherited constructors
-        AbstractTool.__init__(self, verbose, errorFormat, warningFormat, statusFormat)
-        ## Update behavior
-        self._source = "".join([os.environ['SHADE_LOCATION'], "Infrastructure/*"])
-        self._destination = os.getcwd()
-        ## Call method construction
-        self._called_prog = self._buildProgramString()
+        ## Verbose Mode
+        self._verbose = verbose
+        ## Styling
+        self._noFormat = "\033[0m"
+        self._errorFormat = errorFormat
+        self._warningFormat = warningFormat
+        self._statusFormat = statusFormat
 
+    @abc.abstractmethod
     def process(self):
-        self._displayStatus("Calling Program : %s\n" % self._called_prog)
-        try:
-            call(self._called_prog, shell=True)
+        return
+
+    def _displayError(self, msg):
+        print "%s%s%s" % (self._errorFormat, msg, self._noFormat)
+
+    def _displayWarning(self, msg):
+        print "%s%s%s" % (self._warningFormat, msg, self._noFormat)
+
+    def _displayStatus(self, msg):
+        if self._verbose:
+            print "%s%s%s" % (self._statusFormat, msg, self._noFormat)
+
+## Module Testing
+if __name__ == "__main__":
+    import sys
+
+    class TestAT(AbstractTool):
+        def __init__(self):      
+            AbstractTool.__init__(self, True)
+        
+        def process(self):
+            self._displayError("An elf")
+            self._displayWarning("A hord of armed goblins")
+            self._displayStatus("I'm drunk")
             return 0
-        except OSError as e:
-            self._displayError("Command call failed with error\n%s" % e)
-            return 1
-        except ValueError as e:
-            self._displayError("Popen call failed with error\n%s" % e)
-            return 1
 
-    def print_status(self):
-        print "********** InfrastructureUpdater **********"
-        print "verbose :",self._verbose
-        print "source :", self._source
-        print "destination :", self._destination
-        print "*******************************************"
+    
+    testObj = TestAT()
+    code = testObj.process()
 
-    def _buildProgramString(self):
-        program = "rsync"
-        arguments = " ".join(self._buildArgumentList())
-        return " ".join([program, arguments])
-
-    def _buildArgumentList(self):
-        if(self._verbose):
-            argument_list=["-v"]
-        else:
-            argument_list=[]
-        argument_list.extend(["-r", "-u", self._source, self._destination])
-        return argument_list
+    sys.exit(code)
 
 #  ______________________________ 
 # |                              |
@@ -144,3 +140,4 @@ class InfrastructureUpdater(AbstractTool):
 #               |  |
 #               |  |
 #               |__|
+

@@ -19,7 +19,7 @@ By SignC0dingDw@rf <dwarfcieofchaos@gmail.com>
 #
 """
 
-__version__ = "1.0.0"
+__version__ = "1.1.0"
 
 __all__ = ["UpdateInfrastructure"]
 
@@ -102,9 +102,9 @@ parser.add_option("-v", "--verbose", action="store_true", dest="verbose", defaul
 options, args = parser.parse_args()
 
 updater = InfrastructureUpdater(**vars(options)) # Conversion to dictionnary by accessing the __dict__ parameter of the class
-code = updater.update()
+code = updater.process()
 
-sys.exit(0)
+sys.exit(code)
 
 #  ______________________________ 
 # |                              |
