@@ -32,7 +32,7 @@ include(ConfigHandling REQUIRED)
 
 #############################################################################
 
-### Project Configuration ###
+### Project Description ###
 # Project Name
 readConfField("${CONFIG_PATH}/project.dconf" "name" PROJECT_NAME)
 displayMessage(STATUS "Project Name : ${PROJECT_NAME}")
@@ -47,6 +47,18 @@ displayMessage(STATUS "Project Logo : ${PROJECT_LOGO}")
 
 #############################################################################
 
+### Project Version ###
+# Major
+readConfField("${CONFIG_PATH}/version.dconf" "major" VERSION_MAJOR)
+
+# Minor
+readConfField("${CONFIG_PATH}/version.dconf" "minor" VERSION_MINOR)
+
+# Revision
+readConfField("${CONFIG_PATH}/version.dconf" "revision" VERSION_REVISION)
+displayMessage(STATUS "Project Version : ${VERSION_MAJOR}.${VERSION_MINOR}.${VERSION_REVISION}")
+
+#############################################################################
 
 #  ______________________________ 
 # |                              |
