@@ -2,8 +2,8 @@
 
 # file : GetConfField
 # author : SignC0dingDw@rf
-# version : 0.1
-# date : 08 August 2018
+# version : 0.2
+# date : 12 September 2018
 # Get the current value of a given configuration field (may be empty if field does not exist or is not set)
 
 ### Usage
@@ -71,7 +71,7 @@
 ###
 
 ### Version STR
-VERSION_STR="0.1"
+VERSION_STR="0.2"
 
 ### Initialization
 # Colors
@@ -107,8 +107,8 @@ if [ ! -s ${FILE} ]; then
     exit 2
 fi
 
-### Extract value associated with field
-grep "${FIELD}=" ${FILE} | sed -r "s/${FIELD}=//g"
+### Extract value associated with field and remove newline characters
+grep "${FIELD}=" ${FILE} | sed -r "s/${FIELD}=//g" | tr -d '\n'
 
 exit 0
 
