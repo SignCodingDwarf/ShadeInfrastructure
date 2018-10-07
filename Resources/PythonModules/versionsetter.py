@@ -12,7 +12,7 @@ Simple usage example:
 	code = vst.process()
 """
 
-__version__ = "1.0.0"
+__version__ = "1.0.1"
 
 __all__ = ["VersionSetter"]
 
@@ -76,7 +76,7 @@ import imp
 
 ## Local import
 resourcesPath = os.environ['SHADE_LOCATION']
-imp.load_source("abstracttool", "".join([resourcesPath,"PythonModules/","abstracttool.py"]))
+imp.load_source("abstracttool", "".join([resourcesPath,"Infrastructure/infrastructureModules/","abstracttool.py"]))
 from abstracttool import AbstractTool
 
 class VersionSetter(AbstractTool):
@@ -175,7 +175,7 @@ class VersionSetter(AbstractTool):
     def _isVersionNumberSuperior(self):
         if self._major > self._currentMajor or (self._major == self._currentMajor and self._minor > self._currentMinor) or (self._major == self._currentMajor and self._minor == self._currentMinor and self._revision > self._currentRevision):
             self._displayStatus("Upgrading project version from %s.%s.%s" % (self._currentMajor, self._currentMinor, self._currentRevision))
-            self._displayStatus("to from %s.%s.%s" % (self._major, self._minor, self._revision))
+            self._displayStatus("to %s.%s.%s" % (self._major, self._minor, self._revision))
             return True
         elif self._major == self._currentMajor and self._minor == self._currentMinor and self._revision == self._currentRevision:
             self._displayWarning("Requested version %s.%s.%s is identical to current version.\nUpdating nonetheless" % (self._major, self._minor, self._revision))

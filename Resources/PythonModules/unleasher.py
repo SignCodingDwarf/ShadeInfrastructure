@@ -12,7 +12,7 @@ Simple usage example:
 	code = shu.process()
 """
 
-__version__ = "0.6.0"
+__version__ = "0.6.1"
 
 __all__ = ["Unleasher"]
 
@@ -87,7 +87,7 @@ except ImportError:
 
 ## Local import
 resourcesPath = os.environ['SHADE_LOCATION']
-imp.load_source("abstracttool", "".join([resourcesPath,"PythonModules/","abstracttool.py"]))
+imp.load_source("abstracttool", "".join([resourcesPath,"Infrastructure/infrastructureModules/","abstracttool.py"]))
 from abstracttool import AbstractTool
 
 class Unleasher(AbstractTool):

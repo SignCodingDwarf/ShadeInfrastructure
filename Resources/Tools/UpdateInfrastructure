@@ -86,7 +86,7 @@ from optparse import OptionGroup
 ## Local import
 resourcesPath = os.environ['SHADE_LOCATION']
 
-imp.load_source("dwfoptparse", "".join([resourcesPath,"PythonModules/","dwfoptparse.py"]))
+imp.load_source("dwfoptparse", "".join([resourcesPath,"Infrastructure/infrastructureModules/","dwfoptparse.py"]))
 imp.load_source("infrastructureupdater", "".join([resourcesPath,"PythonModules/","infrastructureupdater.py"]))
 from dwfoptparse import DwfOptionParser
 from dwfoptparse import DwfHelpFormatter
