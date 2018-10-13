@@ -2,8 +2,8 @@
 
 # file : ShadeRun
 # author : SignC0dingDw@rf
-# version : 0.1
-# date : 24 July 2018
+# version : 0.2
+# date : 09 October 2018
 # Script to run tools from the ShadeInfrastructure
 
 ### Usage
@@ -75,7 +75,7 @@
 ###
 
 ### Version STR
-VERSION_STR="0.1"
+VERSION_STR="0.2"
 
 
 ### Modules inclusion
@@ -108,12 +108,17 @@ Usage()
     echo -e "Options:"
     echo -e "${helpCategoryColor}----- General Options -----${NC}"
     echo -e "${helpOptionsColor}-h${NC} or ${helpOptionsColor}--help${NC}\t\t show this help message and exit"
-    echo -e "${helpOptionsColor}-version${NC}\t\t show program's version number and exit"
+    echo -e "${helpOptionsColor}--version${NC}\t\t show program's version number and exit"
     echo -e ""
     echo -e "${helpCategoryColor}----- Tool Listing Options -----${NC}"
     echo -e "${helpOptionsColor}-l${NC} or ${helpOptionsColor}--list${NC}\t\t list all available tools on your system and exit"
     echo -e ""
 }
+
+### Check argument number
+if [ $# -eq 0 ]; then
+    Usage
+fi
 
 ### List available tools
 devTools="$(ListDevTools)"
@@ -147,7 +152,7 @@ do
         elif IsInToolList "${userTools}" "$i" 
         then
             COMMAND="tools/${i}"
-            IS_DEV=true
+            IS_DEV=false
             break
         else # First Argument should be valid option or command name
             Usage
