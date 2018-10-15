@@ -22,7 +22,7 @@ By SignC0dingDw@rf <dwarfcieofchaos@gmail.com>
 #
 """
 
-__version__ = "0.1.0"
+__version__ = "0.1.1"
 
 __all__ = ["UpdateInfrastructure"]
 
@@ -89,8 +89,8 @@ from optparse import OptionGroup
 ## Local import
 resourcesPath = os.environ['SHADE_LOCATION']
 
-imp.load_source("dwfoptparse", "".join([resourcesPath,"Infrastructure/infrastructureModules/","dwfoptparse.py"]))
-imp.load_source("unleasher", "".join([resourcesPath,"PythonModules/","unleasher.py"]))
+imp.load_source("dwfoptparse", "".join([resourcesPath,"Infrastructure/pythonModules/argumentParsing/","dwfoptparse.py"]))
+imp.load_source("unleasher", "".join([resourcesPath,"PythonModules/tools/","unleasher.py"]))
 from dwfoptparse import DwfOptionParser
 from dwfoptparse import DwfHelpFormatter
 from unleasher import Unleasher

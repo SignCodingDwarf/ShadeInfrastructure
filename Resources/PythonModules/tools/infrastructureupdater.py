@@ -12,7 +12,7 @@ Simple usage example:
 	code = upd.process()
 """
 
-__version__ = "2.0.1"
+__version__ = "2.0.2"
 
 __all__ = ["InfrastructureUpdater"]
 
@@ -77,7 +77,7 @@ import imp
 
 ## Local import
 resourcesPath = os.environ['SHADE_LOCATION']
-imp.load_source("abstracttool", "".join([resourcesPath,"Infrastructure/infrastructureModules/","abstracttool.py"]))
+imp.load_source("abstracttool", "".join([resourcesPath,"Infrastructure/pythonModules/tools/","abstracttool.py"]))
 from abstracttool import AbstractTool
 
 class InfrastructureUpdater(AbstractTool):
