@@ -12,7 +12,7 @@ Simple usage example:
 	code = vst.process()
 """
 
-__version__ = "1.0.2"
+__version__ = "1.1.0"
 
 __all__ = ["VersionSetter"]
 
@@ -77,7 +77,9 @@ import imp
 ## Local import
 resourcesPath = os.environ['SHADE_LOCATION']
 imp.load_source("abstracttool", "".join([resourcesPath,"Infrastructure/pythonModules/tools/","abstracttool.py"]))
+imp.load_source("configparser", "".join([resourcesPath,"Infrastructure/pythonModules/configParsing/","configparser.py"]))
 from abstracttool import AbstractTool
+from configparser import ConfigParser
 
 class VersionSetter(AbstractTool):
     def __init__(self, verbose, version, errorFormat="\033[1;31m", warningFormat="\033[1;33m", statusFormat="\033[1;32m"):
@@ -147,29 +149,23 @@ class VersionSetter(AbstractTool):
             return False
 
     def _parseCurrentVersion(self):
-        try:
-            destination=open("/".join([self._cwd, "config", "version.dconf"]), "r")
-        except IOError as e:		
-            self._displayWarning("Cannot open file %s.\nOpening failed with error\n%s" % ("/".join([self._cwd, "config", "version.dconf"]), e))
-            self._displayWarning("Current version set to 0")
-            return
-        for line in destination:
-            line=line.replace(" ", "").replace("\n", "") # Remove any space and end line char
-            if line.startswith("major=") and self._currentMajor == 0: # We ignore any duplicates in configuration   
-                try:
-                    self._currentMajor=int(line.lstrip("major="))
-                except ValueError:
-                    pass # We do nothing if conversion fails and version stays to 0             
-            elif  line.startswith("minor=") and self._currentMinor == 0:
-                try:
-                    self._currentMinor=int(line.lstrip("minor="))
-                except ValueError:
-                    pass # We do nothing if conversion fails and version stays to 0             
-            elif  line.startswith("revision=") and self._currentRevision == 0:
-                try:
-                    self._currentRevision=int(line.lstrip("revision="))
-                except ValueError:
-                    pass # We do nothing if conversion fails and version stays to 0   
+        parser = ConfigParser("/".join([self._cwd, "config", "version.dconf"]))
+        versionDict = parser.extractFields(["major","minor","revision"])
+        if versionDict["major"][1] == 0:
+            try:
+                self._currentMajor=int(versionDict["major"][0][0])
+            except ValueError:
+                pass # We do nothing if conversion fails and version stays to 0   
+        if versionDict["minor"][1] == 0:
+            try:
+                self._currentMinor=int(versionDict["minor"][0][0])
+            except ValueError:
+                pass # We do nothing if conversion fails and version stays to 0   
+        if versionDict["revision"][1] == 0:
+            try:
+                self._currentRevision=int(versionDict["revision"][0][0])
+            except ValueError:
+                pass # We do nothing if conversion fails and version stays to 0   
         self._displayStatus("Current Project Version is : %s.%s.%s" % (self._currentMajor, self._currentMinor, self._currentRevision))
 
     def _isVersionNumberSuperior(self):
