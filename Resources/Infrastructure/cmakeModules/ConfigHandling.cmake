@@ -2,7 +2,6 @@
 # Define utilitaries to handle configuration files
 
 # Input Variables :
-# INFRA_MOD_PATH : path to infrasctructure modules
 
 # Once done this will define :
 
@@ -13,7 +12,7 @@
 # @param outputVariable : Variable where result will be stored
 ##
 function(readConfField confFile field outputVariable)
-    execute_process(COMMAND bash -c "${INFRA_MOD_PATH}/GetConfField ${confFile} ${field}" OUTPUT_VARIABLE OUT_TMP)
+    execute_process(COMMAND bash -c "${CMAKE_CURRENT_SOURCE_DIR}/ShadeRun GetConfigField ${confFile} ${field}" OUTPUT_VARIABLE OUT_TMP)
     set(${outputVariable} ${OUT_TMP} PARENT_SCOPE)
 endfunction(readConfField)
 
