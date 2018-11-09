@@ -1,5 +1,8 @@
 #!/usr/bin/env python
 
+## Future import must be at the beginning of the file
+from __future__ import print_function
+
 """ Module abstracttool
 A Module defining the base structure of all infrastructure tools.
 
@@ -10,7 +13,7 @@ A tool constructed following this class only needs to be configured via the obje
 The process() mehtod shall return an error code which will be used as tool command return code.
 """
 
-__version__ = "0.1.0"
+__version__ = "0.2.0"
 
 __all__ = ["AbstractTool"]
 
@@ -70,6 +73,7 @@ If not, see <http://www.dwarfvesaregonnabeatyoutodeath.com>.
 
 ## Global import
 import abc
+import sys
 
 ## Module content
 class AbstractTool:
@@ -89,14 +93,14 @@ class AbstractTool:
         return
 
     def _displayError(self, msg):
-        print "%s%s%s" % (self._errorFormat, msg, self._noFormat)
+        print("%s%s%s" % (self._errorFormat, msg, self._noFormat), file=sys.stderr)
 
     def _displayWarning(self, msg):
-        print "%s%s%s" % (self._warningFormat, msg, self._noFormat)
+        print("%s%s%s" % (self._warningFormat, msg, self._noFormat), file=sys.stderr)
 
     def _displayStatus(self, msg):
         if self._verbose:
-            print "%s%s%s" % (self._statusFormat, msg, self._noFormat)
+            print("%s%s%s" % (self._statusFormat, msg, self._noFormat), file=sys.stderr)
 
 ## Module Testing
 if __name__ == "__main__":
