@@ -14,7 +14,7 @@ Simple usage example:
        fieldDict = parser.getFileContent()
 """
 
-__version__ = "1.0.0"
+__version__ = "2.0.0"
 
 __all__ = ["DconfParser"]
 
@@ -114,7 +114,9 @@ import re
 ## Local import
 fileLocation = os.path.dirname(os.path.realpath(__file__)) # Path where this file is located
 imp.load_source("abstractformatparser", "/".join([fileLocation,"abstractformatparser.py"]))
+imp.load_source("parsingerror", "/".join([fileLocation,"parsingerror.py"]))
 from abstractformatparser import AbstractFormatParser
+import parsingerror #import ParsingError, FileError, ExtensionError, FormatError
 
 ## Module content
 class DconfParser(AbstractFormatParser):
@@ -146,12 +148,12 @@ class DconfParser(AbstractFormatParser):
         """
         self._contentDic = {}
         if not os.path.getsize(configurationFileName) > 0: # Empty file
-                return False
+                errorMsg = "File is empty"
+                raise parsingerror.FormatError(configurationFileName, [errorMsg])
         try:
             parsedFile=open(configurationFileName, 'r')
         except IOError as e:
-            print "Error opening file %s.\n %s" % (configurationFileName, e)		
-            return False
+            raise parsingerror.FileError(configurationFileName, "%s" % e)
         currentField=""
         lineNb=1
         for line in parsedFile:
@@ -160,9 +162,9 @@ class DconfParser(AbstractFormatParser):
             if "=" in line: # Line with new field
                 data = line.split("=")
                 if len(data) > 2:
-                    print "Line", lineNb, "contains several =. Line content is :\n   ", line
+                    errorMsg = "Line %s contains several =. Line content is :\n   %s" % (lineNb, line)
                     parsedFile.close()
-                    return False
+                    raise parsingerror.FormatError(configurationFileName, [errorMsg])
                 currentField=data[0]
                 if currentField in self._contentDic:
                     self._contentDic[currentField].append(data[1])
@@ -170,9 +172,9 @@ class DconfParser(AbstractFormatParser):
                     self._contentDic[currentField] = [data[1]]
             else: # Continuation of previous field
                 if currentField == "":
-                    print "Line", lineNb, "value declared without associated field. Line content is :\n   ", line
+                    errorMsg = "Line %s value declared without associated field. Line content is :\n   %s" % (lineNb, line)
                     parsedFile.close()
-                    return False
+                    raise parsingerror.FormatError(configurationFileName, [errorMsg])
                 self._contentDic[currentField][-1] += "\n"+line        
             lineNb+=1
         parsedFile.close()
@@ -217,12 +219,38 @@ if __name__ == "__main__":
     testFiles[2].write("multilineEntry3")  
 
     ### File with content        
-    assert parser.parseContent(testFiles[0].name) == 0
-    assert parser.getFileContent() == {'FieldA': ['value0', 'value5\nmultilineEntry2\nmultilineEntry3'], 'FieldB': ['value1', 'value4', '42'], 'FieldC': ['value2 value3\nmultilineEntry1']}
+    assert parser.parseContent(testFiles[0].name) == {'FieldA': ['value0', 'value5\nmultilineEntry2\nmultilineEntry3'], 'FieldB': ['value1', 'value4', '42'], 'FieldC': ['value2 value3\nmultilineEntry1']}
 
-    ### Files with error        
-    assert parser.parseContent(testFiles[1].name) == 3 and parser.getFileContent() is None
-    assert parser.parseContent(testFiles[2].name) == 3 and parser.getFileContent() is None
+    ### Files with error
+    testFlag = False
+    try:
+        parser.parseContent(testFiles[1].name)
+    except parsingerror.FormatError as e:
+        testFlag = True
+        testError = parsingerror.FormatError(testFiles[1].name, ["Line 3 contains several =. Line content is :\n   FieldC=value2=value3"])
+        assert e.args == testError.args
+    except Exception as e:
+        print e
+        assert False
+    else:
+        testFlag = False # we should have raised an exception
+    finally:
+        assert testFlag
+        assert parser.getFileContent() is None        
+    try:
+        parser.parseContent(testFiles[2].name)
+    except parsingerror.FormatError as e:
+        testFlag = True
+        testError = parsingerror.FormatError(testFiles[2].name, ["Line 1 value declared without associated field. Line content is :\n   Beginning of file"])
+        assert e.args == testError.args
+    except Exception as e:
+        print e
+        assert False
+    else:
+        testFlag = False # we should have raised an exception
+    finally:
+        assert testFlag
+        assert parser.getFileContent() is None      
     
     ### And delete them 
     for testFile in testFiles:      

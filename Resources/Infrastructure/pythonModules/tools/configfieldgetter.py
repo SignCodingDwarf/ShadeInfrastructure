@@ -12,7 +12,7 @@ Simple usage example:
 	code = cfg.process()
 """
 
-__version__ = "1.0.0"
+__version__ = "1.1.0"
 
 __all__ = ["ConfigFieldGetter"]
 
@@ -79,8 +79,10 @@ import imp
 fileLocation = os.path.dirname(os.path.realpath(__file__)) # Path where this file is located
 imp.load_source("abstracttool", "/".join([fileLocation,"abstracttool.py"]))
 imp.load_source("configparser", "/".join([fileLocation, "../configParsing", "configparser.py"]))
+imp.load_source("parsingerror", "/".join([fileLocation, "../configParsing", "parsingerror.py"]))
 from abstracttool import AbstractTool
 from configparser import ConfigParser
+import parsingerror
 
 class ConfigFieldGetter(AbstractTool):
     def __init__(self, verbose, configFile, configField, separator, errorFormat="\033[1;31m", warningFormat="\033[1;33m", statusFormat="\033[1;32m"):
@@ -119,24 +121,26 @@ class ConfigFieldGetter(AbstractTool):
         self._displayStatus("Parsing file : %s" % self._configFile) 
         parser = ConfigParser(self._configFile, True)
         self._displayStatus("Extracting Field : %s" % self._configField) 
-        fieldDict = parser.extractFields([self._configField])
-        if fieldDict[self._configField][1] == 1:
-            self._displayError("YOU BLITHERING IDIOT !!\nThe file %s does not exist." % self._configFile)   
+        try:
+            fieldDict = parser.extractFields([self._configField])
+        except parsingerror.FileError as e:
+            self._displayError(e)
             return 1
-        if fieldDict[self._configField][1] == 2:
-            self._displayError("YOU MORON !!\nThe file %s has the wrong extension." % self._configFile)   
+        except parsingerror.ExtensionError as e:
+            self._displayError(e)
             return 2
-        if fieldDict[self._configField][1] == 3:
-            self._displayError("STUPID IDIOT !!\nThe file %s could not be parsed." % self._configFile)   
-            return 3      
-        if fieldDict[self._configField][1] == 4:
-            self._displayWarning("The field %s does not exist in file %s." % (self._configField, self._configFile)) 
-            sys.stdout.write("") # Print an empty string without endline char  
-            return 4
-        for value in fieldDict[self._configField][0][0:-1]:
-            sys.stdout.write("%s%s" % (value, self._separator))
-        sys.stdout.write("%s" % (fieldDict[self._configField][0][-1]))
-        return 0
+        except parsingerror.FormatError as e:
+            self._displayError(e)
+            return 3
+        else: 
+            if fieldDict[self._configField] == None:
+                self._displayWarning("The field %s does not exist in file %s." % (self._configField, self._configFile)) 
+                sys.stdout.write("") # Print an empty string without endline char  
+                return 4
+            for value in fieldDict[self._configField][0:-1]:
+                sys.stdout.write("%s%s" % (value, self._separator))
+            sys.stdout.write("%s" % (fieldDict[self._configField][-1]))
+            return 0
 #  ______________________________ 
 # |                              |
 # |    ______________________    |

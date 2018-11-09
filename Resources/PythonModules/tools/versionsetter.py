@@ -12,7 +12,7 @@ Simple usage example:
 	code = vst.process()
 """
 
-__version__ = "1.1.0"
+__version__ = "1.2.0"
 
 __all__ = ["VersionSetter"]
 
@@ -78,8 +78,10 @@ import imp
 resourcesPath = os.environ['SHADE_LOCATION']
 imp.load_source("abstracttool", "".join([resourcesPath,"Infrastructure/pythonModules/tools/","abstracttool.py"]))
 imp.load_source("configparser", "".join([resourcesPath,"Infrastructure/pythonModules/configParsing/","configparser.py"]))
+imp.load_source("parsingerror", "".join([resourcesPath,"Infrastructure/pythonModules/configParsing/","parsingerror.py"]))
 from abstracttool import AbstractTool
 from configparser import ConfigParser
+import parsingerror
 
 class VersionSetter(AbstractTool):
     def __init__(self, verbose, version, errorFormat="\033[1;31m", warningFormat="\033[1;33m", statusFormat="\033[1;32m"):
@@ -150,22 +152,26 @@ class VersionSetter(AbstractTool):
 
     def _parseCurrentVersion(self):
         parser = ConfigParser("/".join([self._cwd, "config", "version.dconf"]))
-        versionDict = parser.extractFields(["major","minor","revision"])
-        if versionDict["major"][1] == 0:
-            try:
-                self._currentMajor=int(versionDict["major"][0][0])
-            except ValueError:
-                pass # We do nothing if conversion fails and version stays to 0   
-        if versionDict["minor"][1] == 0:
-            try:
-                self._currentMinor=int(versionDict["minor"][0][0])
-            except ValueError:
-                pass # We do nothing if conversion fails and version stays to 0   
-        if versionDict["revision"][1] == 0:
-            try:
-                self._currentRevision=int(versionDict["revision"][0][0])
-            except ValueError:
-                pass # We do nothing if conversion fails and version stays to 0   
+        try:
+            versionDict = parser.extractFields(["major","minor","revision"])
+        except parsingerror.ParsingError as e:
+            self._displayWarning(e) 
+        else:
+            if not versionDict["major"] is None:
+                try:
+                    self._currentMajor=int(versionDict["major"][0])
+                except ValueError:
+                    pass # We do nothing if conversion fails and version stays to 0   
+            if not versionDict["minor"] is None:
+                try:
+                    self._currentMinor=int(versionDict["minor"][0])
+                except ValueError:
+                    pass # We do nothing if conversion fails and version stays to 0   
+            if not versionDict["revision"] is None:
+                try:
+                    self._currentRevision=int(versionDict["revision"][0])
+                except ValueError:
+                    pass # We do nothing if conversion fails and version stays to 0   
         self._displayStatus("Current Project Version is : %s.%s.%s" % (self._currentMajor, self._currentMinor, self._currentRevision))
 
     def _isVersionNumberSuperior(self):

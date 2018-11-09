@@ -10,7 +10,7 @@ A parser build according to this class will be initialized to precise the expect
 Then it will extract all fields in the file and will give access to them in a dictionnary associating field tags with the associated values ordered by extraction.
 """
 
-__version__ = "1.0.0"
+__version__ = "2.0.0"
 
 __all__ = ["AbstractFormatParser"]
 
@@ -105,6 +105,12 @@ If not, see <http://www.dwarfvesaregonnabeatyoutodeath.com>.
 import abc
 import string
 import os
+import imp
+
+## Local import
+fileLocation = os.path.dirname(os.path.realpath(__file__)) # Path where this file is located
+imp.load_source("parsingerror", "/".join([fileLocation,"parsingerror.py"]))
+import parsingerror
 
 ## Module content
 class AbstractFormatParser:
@@ -143,24 +149,25 @@ class AbstractFormatParser:
         Extract all fields contained in a configuration file
         @param self : the object pointer.
         @param configurationFileName : name of the file to parse
-        @return A code indicating what happened during parsing
+        @return Content parsed from file
 
-        Parse a configuration and populate the content map with fields associated with their values. The function can return one of the following codes depending on how parsing took place : <br>
-        - 0 : The file could be parsed <br>
-        - 1 : File does not exist <br>
-        - 2 : Wrong file extension <br>
-        - 3 : File could not be parsed or contain format errors. <br>
-        If the return code is not 0, the content dictionnary will be reset to None
+        Parse a configuration and populate the content map with fields associated with their values. The function can throw one of the following receptions : <br>
+        - FileError : if file could not be opened <br>
+        - ExtensionError : Wrong file extension <br>
+        - FormatError : File could not be parsed or contain format errors. <br>
+        If an exception is thrown, the content dictionnary will be reset to None
         """
         self._contentDic = None
         if not os.path.isfile(configurationFileName):
-            return 1
+            raise parsingerror.FileError(configurationFileName, "File does not exist")
         if not self._getFileExtension(configurationFileName) in self._extensionList:
-            return 2
-        if not self._parse(configurationFileName):
+            raise parsingerror.ExtensionError(configurationFileName, self._getFileExtension(configurationFileName), self._extensionList)
+        try:
+            self._parse(configurationFileName)
+        except parsingerror.ParsingError:
             self._contentDic = None # Reset to None in case of error because we have no guarantee on map state
-            return 3
-        return 0
+            raise
+        return self.getFileContent()
 
     def _formatExt(self, extension):
         """
@@ -212,20 +219,33 @@ if __name__ == "__main__":
         def _parse(self, configurationFileName): # A very basic parsing for test purport. It is not really robust
             self._contentDic = {}            
             if not os.path.getsize(configurationFileName) > 0: # Empty file
-                return False
+                raise parsingerror.FormatError(configurationFileName, ["Empty File"])
             try:
                 parsedFile=open(configurationFileName, 'r')
             except IOError as e:		
-                return False            
+                raise parsingerror.FileError(configurationFileName, "%s" % e)            
             for line in parsedFile:
                 values=line.replace("\n", "").split(" ")
                 self._contentDic[values[0]]=values[1]
             parsedFile.close()
-            return True
 
     parser = TestParser()
     assert parser.getFileContent() is None
-    assert parser.parseContent("/tmp/this_file_does_not_even_exist") == 1 and parser.getFileContent() is None
+    testFlag = False
+    try:
+        parser.parseContent("/tmp/this_file_does_not_even_exist")
+    except parsingerror.FileError as e:
+        testFlag = True
+        testError = parsingerror.FileError("/tmp/this_file_does_not_even_exist", "File does not exist")
+        assert e.args == testError.args
+    except Exception as e:
+        print e
+        assert False
+    else:
+        testFlag = False # we should have raised an exception
+    finally:
+        assert testFlag
+        assert parser.getFileContent() is None
 
     ### Create a few test files
     testFileExtensions=[".tmp", ".TotO", "", ".KO"]
@@ -241,19 +261,59 @@ if __name__ == "__main__":
     testFiles[0].write("FieldC value2\n")
 
     ### Wrong extensions
-    assert parser.parseContent(testFiles[2].name) == 2 and parser.getFileContent() is None
-    assert parser.parseContent(testFiles[3].name) == 2 and parser.getFileContent() is None
+    try:
+        parser.parseContent(testFiles[2].name)
+    except parsingerror.ExtensionError as e:
+        testFlag = True
+        testError = parsingerror.ExtensionError(testFiles[2].name, "", [".TMP", ".TOTO"])
+        assert e.args == testError.args
+    except Exception as e:
+        print e
+        assert False
+    else:
+        testFlag = False # we should have raised an exception
+    finally:
+        assert testFlag
+        assert parser.getFileContent() is None
+    try:
+        parser.parseContent(testFiles[3].name)
+    except parsingerror.ExtensionError as e:
+        testFlag = True
+        testError = parsingerror.ExtensionError(testFiles[3].name, ".KO", [".TMP", ".TOTO"])
+        assert e.args == testError.args
+    except Exception as e:
+        print e
+        assert False
+    else:
+        testFlag = False # we should have raised an exception
+    finally:
+        assert testFlag
+        assert parser.getFileContent() is None
 
     ### File with content        
-    assert parser.parseContent(testFiles[0].name) == 0 and parser.getFileContent() == {'FieldA':'value0','FieldB':'value1','FieldC':'value2'} 
+    assert parser.parseContent(testFiles[0].name) == {'FieldA':'value0','FieldB':'value1','FieldC':'value2'} 
     
     ### Parse error due to empty file
-    assert parser.parseContent(testFiles[1].name) == 3 and parser.getFileContent() is None
+    try:
+        parser.parseContent(testFiles[1].name)
+    except parsingerror.FormatError as e:
+        testFlag = True
+        testError = parsingerror.FormatError(testFiles[1].name, ["Empty File"])
+        assert e.args == testError.args
+    except Exception as e:
+        print e
+        assert False
+    else:
+        testFlag = False # we should have raised an exception
+    finally:
+        assert testFlag
+        assert parser.getFileContent() is None
 
     ### And delete them 
     for testFile in testFiles:      
         testFile.close()
 
+    print "OK"
     sys.exit(0)
 
 #  ______________________________ 

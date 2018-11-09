@@ -15,7 +15,7 @@ Simple usage example:
    fieldDict = parser.extractFields(fieldsList)
 """
 
-__version__ = "1.0.0"
+__version__ = "2.0.0"
 
 __all__ = ["ConfigParser"]
 
@@ -114,8 +114,10 @@ import imp
 fileLocation = os.path.dirname(os.path.realpath(__file__)) # Path where this file is located
 imp.load_source("dconfparser", "/".join([fileLocation,"dconfparser.py"]))
 imp.load_source("abstractformatparser", "/".join([fileLocation,"abstractformatparser.py"]))
+imp.load_source("parsingerror", "/".join([fileLocation,"parsingerror.py"]))
 from dconfparser import DconfParser
 from abstractformatparser import AbstractFormatParser
+import parsingerror #import ParsingError, FileError, ExtensionError, FormatError
 
 ## Temporary here 
 ## TODO move to utils
@@ -151,8 +153,8 @@ class ConfigParser:
         ## Set parser
         self._formatParser=formatParser
         if not inherits_from(type(self._formatParser),AbstractFormatParser):
-            raise TypeError("Proposed parser is of type %s which does not inherit AbstractFormatParser" % type(self._formatParser))
             self._formatParser=None
+            raise TypeError("Proposed parser is of type %s which does not inherit AbstractFormatParser" % type(self._formatParser))
 
     def extractFields(self, fieldList):
         """
@@ -162,31 +164,29 @@ class ConfigParser:
         @return A dictionnary matching field with a pair <value list, exec code>. Returns None if list is empty or if parser is not working
 
         Extract from the configuration file the value(s) associated with a field list. <br>
-        The output is returned as a dictionnary matching the field with a pair containing the string value(s) list and an exec code. <br>
-        The value list can either be None (it is always matched with a non zero exec code to explain error reason), contain exactly one element (the first occurence of field encountered) if multiEntryParse is set to False and no error occured or contain one or more elements if multiEntryParse is set to True. <br>
-        The exec code can have the following values : <br>
-        - 0 : the field could be parsed <br>
-        - 1 : configuration file does not exist <br>
-        - 2 : file extension does not match the extension expected by format parser <br>
-        - 3 : parser could not parse file <br>
-        - 4 : provided field does not exist <br>
+        The output is returned as a dictionnary matching the field with a string value(s) list. <br>
+        The value list can either be None if field does not exist or an error occured, contain exactly one element (the first occurence of field encountered) if multiEntryParse is set to False and no error occured or contain one or more elements if multiEntryParse is set to True. <br>
+        The method can raise the following exceptions : <br>
+        - FileError : if file could not be opened <br>
+        - ExtensionError : Wrong file extension <br>
+        - FormatError : File could not be parsed or contain format errors. <br>
+        No exception is raised if a field is not found
         """
         if fieldList is None or len(fieldList) == 0 or self._formatParser is None: 
             return None
-        fieldDic = {field:(None,0) for field in fieldList} # fill dict with keys    
-        parseCode = self._formatParser.parseContent(self._configFileName)
-        if parseCode > 0:
-            fieldDic = {key:(None,parseCode) for key in fieldDic.keys()} # Set content of all keys with error return code
-        else:
-            fileContent = self._formatParser.getFileContent()
-            for key in fieldDic.keys():
-                if key in fileContent.keys():
-                    if self._multiEntryParse:
-                        fieldDic[key]=(fileContent[key], 0)
-                    else:
-                        fieldDic[key]=([fileContent[key][0]], 0) # One element list
-                else :
-                        fieldDic[key]=(None, 4)
+        fieldDic = {field:None for field in fieldList} # fill dict with keys
+        try:   
+            fileContent = self._formatParser.parseContent(self._configFileName)
+        except parsingerror.ParsingError:
+            raise
+        for key in fieldDic.keys():
+            if key in fileContent.keys():
+                if self._multiEntryParse:
+                    fieldDic[key]=fileContent[key]
+                else:
+                    fieldDic[key]=[fileContent[key][0]] # One element list
+            else :
+                    fieldDic[key]=None
         return fieldDic
 
 ## Module Testing
@@ -209,11 +209,29 @@ if __name__ == "__main__":
         failingParser2 = ConfigParser("/tmp/test.dconf")
     except TypeError as e:	
         print e
-        errorInit=True	
-    assert not errorInit
+        errorInit=True
+    else:
+        errorInit=False
+    finally:	
+        assert not errorInit
+
     assert failingParser2.extractFields([]) is None
     assert failingParser2.extractFields(None) is None
-    assert failingParser2.extractFields(["FieldA","FieldB"]) == {'FieldA': (None, 1), 'FieldB': (None, 1)}
+
+    testFlag = False
+    try:
+        failingParser2.extractFields(["FieldA","FieldB"])
+    except parsingerror.FileError as e:
+        testFlag = True
+        testError = parsingerror.FileError("/tmp/test.dconf", "File does not exist")
+        assert e.args == testError.args
+    except Exception as e:
+        print e
+        assert False
+    else:
+        testFlag = False # we should have raised an exception
+    finally:
+        assert testFlag
 
     ### Create test File
     try:
@@ -230,7 +248,19 @@ if __name__ == "__main__":
         print e
         errorInit=True	
     assert not errorInit
-    assert noMultiParser.extractFields(["FieldA","FieldB"]) == {'FieldA': (None, 3), 'FieldB': (None, 3)}
+    try:
+        noMultiParser.extractFields(["FieldA","FieldB"])
+    except parsingerror.FormatError as e:
+        testFlag = True
+        testError = parsingerror.FormatError(testFiles[0].name, ["File is empty"])
+        assert e.args == testError.args
+    except Exception as e:
+        print e
+        assert False
+    else:
+        testFlag = False # we should have raised an exception
+    finally:
+        assert testFlag
 
     ### Populate it
     testFiles[0].write("FieldA= value0\n")
@@ -244,7 +274,7 @@ if __name__ == "__main__":
     testFiles[0].write("multilineEntry3")
 
     ### Test Parsing
-    assert  noMultiParser.extractFields(["FieldA","FieldB", "FieldC", "FieldD"]) == {'FieldA': (["value0"], 0), 'FieldB': (["value1"], 0), 'FieldC': (["value2 value3\nmultilineEntry1"], 0), 'FieldD': (None, 4)}
+    assert  noMultiParser.extractFields(["FieldA","FieldB", "FieldC", "FieldD"]) == {'FieldA': ["value0"], 'FieldB': ["value1"], 'FieldC': ["value2 value3\nmultilineEntry1"], 'FieldD': None}
 
     ### Create OK Parser with multi entry
     errorInit=False
@@ -255,8 +285,8 @@ if __name__ == "__main__":
         errorInit=True	
     assert not errorInit
 
-    assert  multiParser.extractFields(["FieldA", "FieldC", "FieldD"]) == {'FieldA': (["value0", "value6\nmultilineEntry2\nmultilineEntry3"], 0), 'FieldC': (["value2 value3\nmultilineEntry1"], 0), 'FieldD': (None, 4)}
-    assert  multiParser.extractFields(["FieldB"]) == {'FieldB': (["value1", "value4", "42"], 0)}
+    assert  multiParser.extractFields(["FieldA", "FieldC", "FieldD"]) == {'FieldA': ["value0", "value6\nmultilineEntry2\nmultilineEntry3"], 'FieldC': ["value2 value3\nmultilineEntry1"], 'FieldD': None}
+    assert  multiParser.extractFields(["FieldB"]) == {'FieldB': ["value1", "value4", "42"]}
 
     print "OK"
     sys.exit(0)
