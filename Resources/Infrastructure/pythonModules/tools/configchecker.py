@@ -1,20 +1,20 @@
 #!/usr/bin/env python
 
-""" Module configdisplayer
-A module allowing to display project configuration.
+""" Module configchecker
+A module allowing to check current configuration state and initialize config with default value if not set.
 
 By SignC0dingDw@rf <dwarfcieofchaos@gmail.com>
 
 Simple usage example:
-	from configdisplayer import ConfigDisplayer
+	from configchecker import ConfigChecker
 
-	cfgd = ConfigDisplayer()
-	code = cfgd.process()
+	cfgc = ConfigChecker()
+	code = cfgc.process()
 """
 
 __version__ = "0.0.1"
 
-__all__ = ["ConfigDisplayer"]
+__all__ = ["ConfigChecker"]
 
 __copyright__ = """
 Copyright (c) 2018 SignC0dingDw@rf. All rights reserved
@@ -82,32 +82,40 @@ imp.load_source("parsingerror", "/".join([fileLocation, "../configParsing", "par
 from abstracttool import AbstractTool
 from configparser import ConfigParser
 import parsingerror
+try:
+    resourcesPath = os.environ['SHADE_LOCATION']
+    imp.load_source("versionsetter", "".join([resourcesPath,"PythonModules/tools/","versionsetter.py"]))
+    from versionsetter import VersionSetter
+    versionsetterAvailable = True
+except Exception as e:
+    versionsetterAvailable = False
+    print "versionsetter Tool unavailable :"
+    print e
 
-class ConfigDisplayer(AbstractTool):
-    def __init__(self, sectionFormat="\033[1;32m", keyFormat="\033[1;33m", errorFormat="\033[1;31m", warningFormat="\033[1;33m", statusFormat="\033[1;32m"):
+class ConfigChecker(AbstractTool):
+    def __init__(self, verbose, errorFormat="\033[1;31m", warningFormat="\033[1;33m", statusFormat="\033[1;32m"):
         ## Inherited constructors
-        AbstractTool.__init__(self, True, errorFormat, warningFormat, statusFormat)
-        ## Formatting
-        self._sectionFormat = sectionFormat
-        self._keyFormat = keyFormat
+        AbstractTool.__init__(self, verbose, errorFormat, warningFormat, statusFormat)
         ## Configuration directory
         self._configDirectory = "/".join([os.getcwd(), "config/"])
 
     def print_status(self):
-        print "********** Config Displayer **********"
-        print self._sectionFormat,"Section Display Color",self._noFormat
+        print "********** Config Checker **********"
         print "Config Directory    :",self._configDirectory
 
     def process(self):
         if not os.path.isdir(self._configDirectory):
             self._displayError("BLITHERING IDIOT!! The configuration directory %s does not even exist. You project is screwed up!" % self._configDirectory)
             return 1
-        if not self._displayProject():
+        if not self._checkProject():
             return 2
-        self._displayVersion()
+        if not self._checkVersion():
+            if not self._initializeVersion():
+                return 3
+        self._displayStatus("Project configuration is valid")
         return 0
 
-    def _displayProject(self):
+    def _checkProject(self):
         projectFile = "".join([self._configDirectory, "project.dconf"])
         parser = ConfigParser(projectFile, False)
         try:
@@ -116,41 +124,66 @@ class ConfigDisplayer(AbstractTool):
             self._displayError(e)
             return False
         else: 
-            self._printSection("Project")
             if fieldDict["name"] is None or not fieldDict["name"][0]:
                 self._displayError("YOU MORON, your project has no name. You are DOOOOOOMED !!!!")
                 return False
-            else:
-                self._printField("name", fieldDict["name"][0])
-            if not fieldDict["description"] is None:
-                self._printField("description", fieldDict["description"][0])
-            if not fieldDict["logo"] is None:
-                self._printField("logo", fieldDict["logo"][0])
+            if fieldDict["description"] is None or not fieldDict["description"][0]:    
+                self._displayError("HAMMOND !! Where's the project description ? A project can't have no description !!!!")
+                return False
             return True
 
-    def _displayVersion(self):
+    def _checkVersion(self):
         versionFile = "".join([self._configDirectory, "version.dconf"])
         parser = ConfigParser(versionFile, False)
         try:
             fieldDict = parser.extractFields(["major", "minor", "revision"])
         except parsingerror.ParsingError as e:
-            pass # We ignore errors on version file
+            self._displayError(e)
+            return False
         else: 
-            self._printSection("Version")
-            if not fieldDict["major"] is None:
-                self._printField("major", fieldDict["major"][0])
-            if not fieldDict["minor"] is None:
-                self._printField("minor", fieldDict["minor"][0])
-            if not fieldDict["revision"] is None:
-                self._printField("revision", fieldDict["revision"][0])
+            if fieldDict["major"] is None:
+                self._displayWarning("The project has no major version")
+                return False
+            else:
+                try:
+                    currentMajor=int(fieldDict["major"][0])
+                except ValueError:
+                    self._displayWarning("The major field %s is not an integer" % fieldDict["major"][0]) 
+                    return False
+            if fieldDict["minor"] is None:
+                self._displayWarning("The project has no minor version")
+                return False
+            else:
+                try:
+                    currentMinor=int(fieldDict["minor"][0])
+                except ValueError:
+                    self._displayWarning("The minor field %s is not an integer" % fieldDict["minor"][0]) 
+                    return False
+            if fieldDict["revision"] is None:
+                self._displayWarning("The project has no revision version")
+                return False
+            else:
+                try:
+                    currentRevision=int(fieldDict["revision"][0])
+                except ValueError:
+                    self._displayWarning("The revision field %s is not an integer" % fieldDict["revision"][0]) 
+                    return False
             return True
 
-
-    def _printSection(self, section):
-        print self._sectionFormat, "********** ", section, " **********", self._noFormat
-
-    def _printField(self, key, value):
-        print self._keyFormat, "", key, ":\t", self._noFormat, value
+    def _initializeVersion(self):
+        if not versionsetterAvailable:
+            self._displayError("versionsetter tool unavailable. Cannot correct error on module version")
+            return False
+        versionFile = "".join([self._configDirectory, "version.dconf"])
+        if os.path.isfile(versionFile):
+            os.remove(versionFile) # Delete the file so that we get sure version is 0.0.0 otherwise file would not be updated
+    	vst = VersionSetter(verbose = self._verbose, version = [0, 0, 1])
+    	code = vst.process()
+        if code == 0:
+            return True
+        else:   
+            self._displayError("Version setting failed with error : %d" % code)
+            return False
 
 #  ______________________________ 
 # |                              |
