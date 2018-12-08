@@ -18,10 +18,11 @@ By SignC0dingDw@rf <dwarfcieofchaos@gmail.com>
 # 1 : Configuration folder does not exist
 # 2 : Issue with file project.dconf
 # 3 : Cannot correct errors on project version
+# 4 : Cannot correct errors on project install folders
 #
 """
 
-__version__ = "0.0.1"
+__version__ = "0.0.2"
 
 __all__ = ["CheckConfig"]
 

@@ -12,7 +12,7 @@ Simple usage example:
 	code = ifs.process()
 """
 
-__version__ = "1.0.0"
+__version__ = "1.0.1"
 
 __all__ = ["InstallFolderSetter"]
 
@@ -153,6 +153,7 @@ class InstallFolderSetter(AbstractTool):
         except IOError as e:		
             self._displayError("Cannot open file %s%s, YOU BLITHERING IDIOT.\nOpening failed with error\n%s" % (self._configDirectory,"install.dconf", e))
             return 7
+        self._displayStatus("Updating installation folders file")
         for field,value in fields.iteritems():
             destination.write("%s=%s\n" % (field,value))
         return 0

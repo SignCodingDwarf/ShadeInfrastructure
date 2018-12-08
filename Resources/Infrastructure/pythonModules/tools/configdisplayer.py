@@ -12,7 +12,7 @@ Simple usage example:
 	code = cfgd.process()
 """
 
-__version__ = "0.0.1"
+__version__ = "0.0.2"
 
 __all__ = ["ConfigDisplayer"]
 
@@ -105,6 +105,7 @@ class ConfigDisplayer(AbstractTool):
         if not self._displayProject():
             return 2
         self._displayVersion()
+        self._displayInstallFolders()
         return 0
 
     def _displayProject(self):
@@ -145,6 +146,26 @@ class ConfigDisplayer(AbstractTool):
                 self._printField("revision", fieldDict["revision"][0])
             return True
 
+    def _displayInstallFolders(self):
+        installFile = "".join([self._configDirectory, "install.dconf"])
+        parser = ConfigParser(installFile, False)
+        try:
+            fieldDict = parser.extractFields(["libraries", "archives", "binaries", "includes", "resources"])
+        except parsingerror.ParsingError as e:
+            pass # We ignore errors on version file
+        else: 
+            self._printSection("Install Folders")
+            if not fieldDict["libraries"] is None:
+                self._printField("libraries", fieldDict["libraries"][0])
+            if not fieldDict["archives"] is None:
+                self._printField("archives", fieldDict["archives"][0])
+            if not fieldDict["binaries"] is None:
+                self._printField("binaries", fieldDict["binaries"][0])
+            if not fieldDict["includes"] is None:
+                self._printField("includes", fieldDict["includes"][0])
+            if not fieldDict["resources"] is None:
+                self._printField("resources", fieldDict["resources"][0])
+            return True        
 
     def _printSection(self, section):
         print self._sectionFormat, "********** ", section, " **********", self._noFormat

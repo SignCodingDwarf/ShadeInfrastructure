@@ -12,7 +12,7 @@ Simple usage example:
 	code = cfgc.process()
 """
 
-__version__ = "0.0.1"
+__version__ = "0.0.2"
 
 __all__ = ["ConfigChecker"]
 
@@ -91,6 +91,14 @@ except Exception as e:
     versionsetterAvailable = False
     print "versionsetter Tool unavailable :"
     print e
+try:
+    imp.load_source("installfoldersetter", "/".join([fileLocation,"installfoldersetter.py"]))
+    from installfoldersetter import InstallFolderSetter
+    installfoldersetterAvailable = True
+except Exception as e:
+    installfoldersetterAvailable = False
+    print "installfoldersetter Tool unavailable :"
+    print e
 
 class ConfigChecker(AbstractTool):
     def __init__(self, verbose, errorFormat="\033[1;31m", warningFormat="\033[1;33m", statusFormat="\033[1;32m"):
@@ -98,6 +106,8 @@ class ConfigChecker(AbstractTool):
         AbstractTool.__init__(self, verbose, errorFormat, warningFormat, statusFormat)
         ## Configuration directory
         self._configDirectory = "/".join([os.getcwd(), "config/"])
+        ## Local storage for installation folders
+        self._folders = {"librariesLocation":None, "archivesLocation":None, "binariesLocation":None, "includesLocation":None, "resourcesLocation":None}
 
     def print_status(self):
         print "********** Config Checker **********"
@@ -112,6 +122,9 @@ class ConfigChecker(AbstractTool):
         if not self._checkVersion():
             if not self._initializeVersion():
                 return 3
+        if not self._checkInstallFolders():
+            if not self._initializeInstallFolders():
+                return 4
         self._displayStatus("Project configuration is valid")
         return 0
 
@@ -183,6 +196,76 @@ class ConfigChecker(AbstractTool):
             return True
         else:   
             self._displayError("Version setting failed with error : %d" % code)
+            return False
+
+    def _checkInstallFolders(self):
+        confOk = True
+        installFile = "".join([self._configDirectory, "install.dconf"])
+        parser = ConfigParser(installFile, False)
+        try:
+            fieldDict = parser.extractFields(["libraries", "archives", "binaries", "includes", "resources"])
+        except parsingerror.ParsingError as e:
+            self._displayError(e)
+            return False
+        else: 
+            if fieldDict["libraries"] is None:
+                self._displayWarning("The project has no libraries install folder")
+                confOk = False
+            else:
+                if not os.path.isdir(fieldDict["libraries"][0]):
+                    self._displayWarning("The libraries install folder %s does not exist." % fieldDict["libraries"][0]) 
+                    confOk = False
+                else:
+                    self._folders["librariesLocation"]=fieldDict["libraries"][0]
+            if fieldDict["archives"] is None:
+                self._displayWarning("The project has no archives install folder")
+                confOk = False
+            else:
+                if not os.path.isdir(fieldDict["archives"][0]):
+                    self._displayWarning("The archives install folder %s does not exist." % fieldDict["archives"][0]) 
+                    confOk = False
+                else:
+                    self._folders["archivesLocation"]=fieldDict["archives"][0]
+            if fieldDict["binaries"] is None:
+                self._displayWarning("The project has no binaries install folder")
+                confOk = False
+            else:
+                if not os.path.isdir(fieldDict["binaries"][0]):
+                    self._displayWarning("The binaries install folder %s does not exist." % fieldDict["binaries"][0]) 
+                    confOk = False
+                else:
+                    self._folders["binariesLocation"]=fieldDict["binaries"][0]
+            if fieldDict["includes"] is None:
+                self._displayWarning("The project has no includes install folder")
+                confOk = False
+            else:
+                if not os.path.isdir(fieldDict["includes"][0]):
+                    self._displayWarning("The includes install folder %s does not exist." % fieldDict["includes"][0]) 
+                    confOk = False
+                else:
+                    self._folders["includesLocation"]=fieldDict["includes"][0]
+            if fieldDict["resources"] is None:
+                self._displayWarning("The project has no resources install folder")
+                confOk = False
+            else:
+                if not os.path.isdir(fieldDict["resources"][0]):
+                    self._displayWarning("The resources install folder %s does not exist." % fieldDict["resources"][0]) 
+                    confOk = False
+                else:
+                    self._folders["resourcesLocation"]=fieldDict["resources"][0]
+            return confOk
+
+    def _initializeInstallFolders(self):
+        if not installfoldersetterAvailable:
+            self._displayError("installfoldersetter tool unavailable. Cannot correct error on module install folders")
+            return False
+        installFile = "".join([self._configDirectory, "install.dconf"])
+    	vst = InstallFolderSetter(verbose = self._verbose, **self._folders) # Tool provides default values for install folders
+    	code = vst.process()
+        if code == 0:
+            return True
+        else:   
+            self._displayError("Install Folders setting failed with error : %d" % code)
             return False
 
 #  ______________________________ 
