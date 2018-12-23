@@ -9,24 +9,24 @@
 # Once done this will define :
 # 
 
-include(MessageDisplay REQUIRED)
+include("${CMAKE_CURRENT_LIST_DIR}/MessageDisplay.cmake" REQUIRED)
 
 displayMessage(STATUS "Checking Operating System")
 
 if(NOT CMAKE_HOST_UNIX)
 
-	displayMessage(STATUS "Windows User Detected")
+	displayMessage(STATUS "Windows System Detected")
 	displayMessage(FATAL_ERROR "Hey Windows User, this project currently only supports Linux-based Operating Systems !!!")
 
 else()
 	if(CMAKE_HOST_APPLE)
-		displayMessage(STATUS "Mac OSX User Detected")
+		displayMessage(STATUS "Mac OSX System Detected")
 		displayMessage(FATAL_ERROR "Hey Apple User, this project currently only supports Linux-based Operating Systems !!!")
 	elseif(CMAKE_HOST_CYGWIN)
-		displayMessage(STATUS "Cygwin User Detected")
+		displayMessage(STATUS "Cygwin System Detected")
 		displayMessage(FATAL_ERROR "Hey Windows Cygwin User, this project currently only supports Linux-based Operating Systems !!!")
 	else()
-		displayMessage(STATUS "Linux User Detected, installation proceeding")
+		displayMessage(STATUS "Linux System Detected, installation proceeding")
 	endif()
 endif()
 

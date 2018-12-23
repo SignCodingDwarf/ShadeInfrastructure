@@ -26,37 +26,13 @@ displayMessage(STATUS "Infrastructure Modules path : ${INFRA_MOD_PATH}")
 
 #############################################################################
 
-### Utility module inclusion ###
-# Configuration file management
-include(ConfigHandling REQUIRED)
-
-#############################################################################
-
-### Project Description ###
-# Project Name
-readConfField("${CONFIG_PATH}/project.dconf" "name" PROJECT_NAME)
-displayMessage(STATUS "Project Name : ${PROJECT_NAME}")
-
+### Configuration Loading ###
 # Project Description
-readConfField("${CONFIG_PATH}/project.dconf" "description" PROJECT_DESCRIPTION)
-displayMessage(STATUS "Project Description : ${PROJECT_DESCRIPTION}")
+include(LoadProjectConfig REQUIRED)
 
-# Project Logo
-readConfField("${CONFIG_PATH}/project.dconf" "logo" PROJECT_LOGO)
-displayMessage(STATUS "Project Logo : ${PROJECT_LOGO}")
+# Project Version 
+include(LoadProjectVersion REQUIRED)
 
-#############################################################################
-
-### Project Version ###
-# Major
-readConfField("${CONFIG_PATH}/version.dconf" "major" VERSION_MAJOR)
-
-# Minor
-readConfField("${CONFIG_PATH}/version.dconf" "minor" VERSION_MINOR)
-
-# Revision
-readConfField("${CONFIG_PATH}/version.dconf" "revision" VERSION_REVISION)
-displayMessage(STATUS "Project Version : ${VERSION_MAJOR}.${VERSION_MINOR}.${VERSION_REVISION}")
 
 #############################################################################
 
