@@ -33,6 +33,8 @@ include(LoadProjectConfig REQUIRED)
 # Project Version 
 include(LoadProjectVersion REQUIRED)
 
+# Install Folders
+include(LoadInstallFolders REQUIRED)
 
 #############################################################################
 
