@@ -15,7 +15,7 @@ include(OSisLinux REQUIRED)
 
 #############################################################################
 
-### General Variables Initialization ###
+### Path Variables Initialization ###
 # Path to configuration files
 get_filename_component(CONFIG_PATH "config" REALPATH BASE_DIR "${CMAKE_CURRENT_SOURCE_DIR}")
 displayMessage(STATUS "Configuration folder path : ${CONFIG_PATH}")
@@ -23,6 +23,14 @@ displayMessage(STATUS "Configuration folder path : ${CONFIG_PATH}")
 # Path to infrastructure modules
 get_filename_component(INFRA_MOD_PATH "infrastructureModules" REALPATH BASE_DIR "${CMAKE_CURRENT_SOURCE_DIR}")
 displayMessage(STATUS "Infrastructure Modules path : ${INFRA_MOD_PATH}")
+
+# Path to template files
+get_filename_component(TEMPLATE_PATH "template" REALPATH BASE_DIR "${CMAKE_CURRENT_SOURCE_DIR}")
+displayMessage(STATUS "Template Modules path : ${TEMPLATE_PATH}")
+
+# Path to doc folder
+get_filename_component(DOC_PATH "doc" REALPATH BASE_DIR "${CMAKE_CURRENT_SOURCE_DIR}")
+displayMessage(STATUS "Documentation Location : ${DOC_PATH}")
 
 #############################################################################
 
@@ -35,6 +43,17 @@ include(LoadProjectVersion REQUIRED)
 
 # Install Folders
 include(LoadInstallFolders REQUIRED)
+
+#############################################################################
+
+### Project Definition ###
+project(${PROJECT_NAME})
+
+#############################################################################
+
+### Generate template files ###
+# Documentation
+include(CreateDocFile REQUIRED)
 
 #############################################################################
 
