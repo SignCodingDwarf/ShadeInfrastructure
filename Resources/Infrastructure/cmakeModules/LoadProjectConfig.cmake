@@ -26,6 +26,10 @@ if(NOT DEFINED PROJECT_CONFIG_LOADED)
     readConfField("${CONFIG_PATH}/project.dconf" "description" PROJECT_DESCRIPTION)
     displayMessage(STATUS "Project Description : ${PROJECT_DESCRIPTION}")
 
+    # Project Brief
+    extractFirstLine(${PROJECT_DESCRIPTION} PROJECT_BRIEF)
+    displayMessage(STATUS "Project Brief : ${PROJECT_BRIEF}")
+
     # Project Logo
     readConfField("${CONFIG_PATH}/project.dconf" "logo" PROJECT_LOGO)
     displayMessage(STATUS "Project Logo : ${PROJECT_LOGO}")
